@@ -1,0 +1,14 @@
+name: Commit
+on:
+  push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Commit to Notion
+        uses: madxcompany/commit-to-notion@v0.1.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE: ${{ secrets.NOTION_DATABASE }}
