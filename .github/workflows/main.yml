@@ -1,0 +1,13 @@
+on: [push]
+
+jobs:
+  PushToNotionDatabase:
+    runs-on: ubuntu-latest
+    name: Push commit to notion database
+    steps:
+      - name: Sending commit details...
+        id: notion
+        uses: alessandrobelli/NotionHook@1.0
+        with:
+          notion_secret: ${{ secrets.NOTION_API_KEY }}
+          notion_database: ${{ secrets.NOTION_DATABASE }}
