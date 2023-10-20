@@ -35,7 +35,7 @@
             { "q", Piece.BlackQueen },
             { "k", Piece.BlackKing }
         };
-        public static readonly String[] UNICODEPieces = {
+        public static readonly String[] UnicodePieces = {
             "\u265f",
             "\u265E",
             "\u265D",
@@ -43,36 +43,23 @@
             "\u265B",
             "\u265A",
         };
+
         private BoardCopy _boardCopy;
 
         public Board(String fen) {
+            // this originally was in ParseFen() but it got moved here to fix warnings
+            Bitboards = new ulong[] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+            Blockers = new ulong[] { 0x0, 0x0, 0x0 };
+            SideToMove = SideToMove.White;
+            EnPassant = Square.NoSquare;
+            Castling = 0;
+            
             ParseFen(fen);
+            
             _boardCopy = new BoardCopy(EnPassant, SideToMove, Castling, Bitboards, Blockers);
         }
         
         public void ParseFen(String fen) {
-            Bitboards = new ulong[12] {
-                0x0,
-                0x0,
-                0x0,
-                0x0,
-                0x0,
-                0x0,
-                0x0,
-                0x0,
-                0x0,
-                0x0,
-                0x0,
-                0x0
-            };
-            Blockers = new ulong[3] {
-                0x0,
-                0x0,
-                0x0,
-            };
-            SideToMove = SideToMove.White;
-            EnPassant = Square.NoSquare;
-            Castling = 0;
 
             int index, square = 0;
 
@@ -174,11 +161,11 @@
             Square source = Move.GetMoveSource(move);
             Square target = Move.GetMoveTarget(move);
             Piece piece = Move.GetMovePiece(move);
-            Piece promoted = (Piece)Move.GetMovePromotion(move);
-            int capture = Move.GetMoveCapture(move);
-            int doublePush = Move.GetMoveDoublePush(move);
-            int enPassant = Move.GetMoveEnPassant(move);
-            int castling = Move.GetMoveCastling(move);
+            // Piece promoted = (Piece)Move.GetMovePromotion(move);
+            // int capture = Move.GetMoveCapture(move);
+            // int doublePush = Move.GetMoveDoublePush(move);
+            // int enPassant = Move.GetMoveEnPassant(move);
+            // int castling = Move.GetMoveCastling(move);
 
             BitboardHelper.PopBitAtSquare(source, ref Bitboards[(int)piece]);
             BitboardHelper.SetBitAtSquare(target, ref Bitboards[(int)piece]);
@@ -246,7 +233,7 @@
 
                     if (BitboardHelper.GetBitAtIndex(square, bitboard) > 0) {
                         Console.ForegroundColor = (int)piece > 5 ? ConsoleColor.Black : ConsoleColor.White;
-                        pieceToPrint = UNICODEPieces[(int)piece % 6];
+                        pieceToPrint = UnicodePieces[(int)piece % 6];
                     }
                 }
                 
