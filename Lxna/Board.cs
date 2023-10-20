@@ -1,7 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
-
-namespace Lxna
+﻿namespace Lxna
 {
     internal class BoardCopy {
         public Square EnPassant;
@@ -52,7 +49,7 @@ namespace Lxna
             ParseFen(fen);
             _boardCopy = new BoardCopy(EnPassant, SideToMove, Castling, Bitboards, Blockers);
         }
-
+        
         public void ParseFen(String fen) {
             Bitboards = new ulong[12] {
                 0x0,
@@ -134,35 +131,27 @@ namespace Lxna
             }
         }
 
-        public static int EncodeMove(int source, int target, int piece, int promoted, int capture,
-            int doublePush, int enPassant,
-            int castling) {
-            return source | (target << 6) | (piece << 12) | (promoted << 16) | (capture << 20) | (doublePush << 21) | (enPassant << 22) | (castling << 23);
-        }
-
-        public static Square GetMoveSource(int move) { return (Square)(move & 0x3f); }
-        public static Square GetMoveTarget(int move) { return (Square)((move & 0xfc0) >> 6); }
-        public static Piece GetMovePiece(int move) { return (Piece)((move & 0xf000) >> 12); }
-        public static int GetMovePromotion(int move) { return (move & 0xf0000) >> 16; }
-        public static int GetMoveCapture(int move) { return move & 0x100000; }
-        public static int GetMoveDoublePush(int move) { return move & 0x200000; }
-        public static int GetMoveEnPassant(int move) { return move & 0x400000; }
-        public static int GetMoveCastling(int move) { return move & 0x800000; }
 
         public void Copy() {
             _boardCopy.SideToMove = SideToMove;
             _boardCopy.EnPassant = EnPassant;
             _boardCopy.Castling = Castling;
-            Array.Copy(Bitboards, _boardCopy.Bitboards, 12);
-            Array.Copy(Blockers, _boardCopy.Blockers, 3);
+            _boardCopy.Bitboards = Bitboards.ToArray();
+            _boardCopy.Blockers = Blockers.ToArray();
+            
+            // Array.Copy(Bitboards, _boardCopy.Bitboards, 12);
+            // Array.Copy(Blockers, _boardCopy.Blockers, 3);
         }
         
         public void TakeBack() {
+            
             SideToMove = _boardCopy.SideToMove;
             EnPassant = _boardCopy.EnPassant;
             Castling = _boardCopy.Castling;
-            Array.Copy(_boardCopy.Bitboards, Bitboards, 12);
-            Array.Copy(_boardCopy.Blockers, Blockers, 3);
+            Bitboards = _boardCopy.Bitboards.ToArray();
+            Blockers = _boardCopy.Blockers.ToArray();
+            // Array.Copy(_boardCopy.Bitboards, Bitboards, 12);
+            // Array.Copy(_boardCopy.Blockers, Blockers, 3);
         }
 
         public void PrintAttacks(SideToMove side) {
@@ -175,8 +164,24 @@ namespace Lxna
             BitboardHelper.Print(attacks);
         }
 
-        public List<int> GetLegalMoves() {
-             return Movegen.GenerateMoves(this);
+        public List<int> GetLegalMoves(bool capturesOnly) {
+             return capturesOnly ? Movegen.GenerateCaptureMoves(this) : Movegen.GenerateMoves(this);
+        }
+
+        public void MakeMove(int move) {
+            Copy();
+
+            Square source = Move.GetMoveSource(move);
+            Square target = Move.GetMoveTarget(move);
+            Piece piece = Move.GetMovePiece(move);
+            Piece promoted = (Piece)Move.GetMovePromotion(move);
+            int capture = Move.GetMoveCapture(move);
+            int doublePush = Move.GetMoveDoublePush(move);
+            int enPassant = Move.GetMoveEnPassant(move);
+            int castling = Move.GetMoveCastling(move);
+
+            BitboardHelper.PopBitAtSquare(source, ref Bitboards[(int)piece]);
+            BitboardHelper.SetBitAtSquare(target, ref Bitboards[(int)piece]);
         }
 
         public bool IsSquareAttacked(Square square, SideToMove side) {

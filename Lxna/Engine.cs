@@ -103,11 +103,6 @@ namespace Lxna {
         BlackRook,
         BlackQueen,
     }
-
-    public struct MoveList {
-        private int[] moves;
-        private int count;
-    }
     
     internal class Engine {
         public static readonly String EMPTY_BOARD = "8/8/8/8/8/8/8/8 b - - ";
@@ -118,17 +113,30 @@ namespace Lxna {
 
         public static void Main(string[] args) {
             Movegen.Init();
-            Board board1 = new Board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq c6   0 1 ");
+            Board board = new Board(TRICKY_POS);
             
-            board1.Print();
-            board1.Copy();
+            board.Print();
 
-            board1.ParseFen(EMPTY_BOARD);
+            List<int> moves = board.GetLegalMoves(false);
+
+            foreach (int move in moves) {
+                Move.PrintVerbose(move);
+                board.MakeMove(move);
+                board.Print();
+                board.TakeBack();
+                Console.Read();
+            }
             
-            board1.Print();
-            board1.TakeBack();
-            board1.Print();
-
+            // Move.PrintVerbose(moves[0]);
+            // board.MakeMove(moves[0]);
+            // board.Print();
+            // board.TakeBack();
+            // board.Print();
+            // Move.PrintVerbose(moves[1]);
+            // board.MakeMove(moves[1]);
+            // board.Print();
+            // board.TakeBack();
+            // board.Print();
         }
     }
 }

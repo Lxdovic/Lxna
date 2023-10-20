@@ -1,7 +1,7 @@
 ﻿
 namespace Lxna {
     internal class BitboardHelper {
-        public ulong PopBitAtSquare(Square square, ref ulong value) {
+        public static ulong PopBitAtSquare(Square square, ref ulong value) {
             return GetBitAtSquare(square, value) > 0 ? value ^= (ulong)0x1 << (int)square : 0;
         }
 
