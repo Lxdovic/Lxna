@@ -1,11 +1,11 @@
 on: [push]
 
 jobs:
-  Notion_Hook_job:
+  PushToNotionDatabase:
     runs-on: ubuntu-latest
-    name: A job to connect to Notion
+    name: Push commit to notion database
     steps:
-      - name: Connect to Notion step
+      - name: Sending commit details...
         id: notion
         uses: alessandrobelli/NotionHook@1.0
         with:
