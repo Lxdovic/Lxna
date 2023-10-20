@@ -110,7 +110,7 @@ namespace Lxna {
     }
     
     internal class Engine {
-        public static readonly String EMPTY_BOARD = "8/8/8/8/8/8/8/8 w - - ";
+        public static readonly String EMPTY_BOARD = "8/8/8/8/8/8/8/8 b - - ";
         public static readonly String TRICKY_POS = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ";
         public static readonly String START_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ";
         public static readonly String KILLER_POS = "rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1";
@@ -118,16 +118,17 @@ namespace Lxna {
 
         public static void Main(string[] args) {
             Movegen.Init();
-            //
-            Board board = new Board(TRICKY_POS);
+            Board board1 = new Board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq c6   0 1 ");
             
-            board.Print();
-            
-            List<int> moves = board.GetLegalMoves();
+            board1.Print();
+            board1.Copy();
 
-            Move.PrintMoveList(moves, true);
+            board1.ParseFen(EMPTY_BOARD);
             
-            Console.WriteLine("MoveList Length: {0,2}", moves.Count);
+            board1.Print();
+            board1.TakeBack();
+            board1.Print();
+
         }
     }
 }

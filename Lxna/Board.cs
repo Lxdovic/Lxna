@@ -3,6 +3,21 @@ using System.Text.RegularExpressions;
 
 namespace Lxna
 {
+    internal class BoardCopy {
+        public Square EnPassant;
+        public SideToMove SideToMove;
+        public int Castling;
+        public ulong[] Bitboards;
+        public ulong[] Blockers;
+
+        public BoardCopy(Square enPassant, SideToMove sideToMove, int castling, ulong[] bitboards, ulong[] blockers) {
+            EnPassant = enPassant;
+            SideToMove = sideToMove;
+            Castling = castling;
+            Bitboards = bitboards;
+            Blockers = blockers;
+        }
+    }
     internal class Board {
         public ulong[] Bitboards;
         public ulong[] Blockers;
@@ -31,8 +46,14 @@ namespace Lxna
             "\u265B",
             "\u265A",
         };
+        private BoardCopy _boardCopy;
 
         public Board(String fen) {
+            ParseFen(fen);
+            _boardCopy = new BoardCopy(EnPassant, SideToMove, Castling, Bitboards, Blockers);
+        }
+
+        public void ParseFen(String fen) {
             Bitboards = new ulong[12] {
                 0x0,
                 0x0,
@@ -127,6 +148,22 @@ namespace Lxna
         public static int GetMoveDoublePush(int move) { return move & 0x200000; }
         public static int GetMoveEnPassant(int move) { return move & 0x400000; }
         public static int GetMoveCastling(int move) { return move & 0x800000; }
+
+        public void Copy() {
+            _boardCopy.SideToMove = SideToMove;
+            _boardCopy.EnPassant = EnPassant;
+            _boardCopy.Castling = Castling;
+            Array.Copy(Bitboards, _boardCopy.Bitboards, 12);
+            Array.Copy(Blockers, _boardCopy.Blockers, 3);
+        }
+        
+        public void TakeBack() {
+            SideToMove = _boardCopy.SideToMove;
+            EnPassant = _boardCopy.EnPassant;
+            Castling = _boardCopy.Castling;
+            Array.Copy(_boardCopy.Bitboards, Bitboards, 12);
+            Array.Copy(_boardCopy.Blockers, Blockers, 3);
+        }
 
         public void PrintAttacks(SideToMove side) {
             ulong attacks = 0x0;
