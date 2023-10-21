@@ -43,6 +43,16 @@
             "\u265B",
             "\u265A",
         };
+        public static readonly int[] CastlingRights = new int[64] {
+             7, 15, 15, 15,  3, 15, 15, 11,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            13, 15, 15, 15, 12, 15, 15, 14
+        };
 
         private BoardCopy _boardCopy;
 
@@ -155,7 +165,7 @@
              return capturesOnly ? Movegen.GenerateCaptureMoves(this) : Movegen.GenerateMoves(this);
         }
 
-        public void MakeMove(int move) {
+        public bool MakeMove(int move) {
             Copy();
 
             Square source = Move.GetMoveSource(move);
@@ -165,16 +175,21 @@
             int capture = Move.GetMoveCapture(move);
             int doublePush = Move.GetMoveDoublePush(move);
             int enPassant = Move.GetMoveEnPassant(move);
-            // int castling = Move.GetMoveCastling(move);
+            int castling = Move.GetMoveCastling(move);
 
             BitboardHelper.PopBitAtSquare(source, ref Bitboards[(int)piece]);
             BitboardHelper.SetBitAtSquare(target, ref Bitboards[(int)piece]);
+            BitboardHelper.PopBitAtIndex((int)source, ref Blockers[(int)SideToMove]);
+            BitboardHelper.SetBitAtIndex((int)target, ref Blockers[(int)SideToMove]);
+            BitboardHelper.PopBitAtIndex((int)source, ref Blockers[(int)SideToMove.Both]);
+            BitboardHelper.SetBitAtIndex((int)target, ref Blockers[(int)SideToMove.Both]);
 
             if (capture > 0) {
                 // this could be changed to ignore kings of both sides
                 for (int currentPiece = 11 - (int)SideToMove * 6; currentPiece > 11 - ((int)SideToMove + 1) * 6; currentPiece--) {
                     if (BitboardHelper.GetBitAtIndex((int)target, Bitboards[currentPiece]) > 0) {
                         BitboardHelper.PopBitAtIndex((int)target, ref Bitboards[currentPiece]);
+                        BitboardHelper.PopBitAtIndex((int)target, ref Blockers[(int)SideToMove ^ 1]);
                         break;
                     }   
                 }
@@ -186,9 +201,16 @@
             }
 
             if (enPassant > 0) {
-                _ = SideToMove == SideToMove.White 
-                    ? BitboardHelper.PopBitAtIndex((int)target + 8, ref Bitboards[6])
-                    : BitboardHelper.PopBitAtIndex((int)target - 8, ref Bitboards[0]);
+                if (SideToMove == SideToMove.White) {
+                    BitboardHelper.PopBitAtIndex((int)target + 8, ref Bitboards[6]);
+                    BitboardHelper.PopBitAtIndex((int)target + 8, ref Blockers[(int)SideToMove.Both]);
+                    BitboardHelper.PopBitAtIndex((int)target + 8, ref Blockers[(int)SideToMove ^ 1]);
+                }
+                else {
+                    BitboardHelper.PopBitAtIndex((int)target - 8, ref Bitboards[0]);
+                    BitboardHelper.PopBitAtIndex((int)target - 8, ref Blockers[(int)SideToMove.Both]);
+                    BitboardHelper.PopBitAtIndex((int)target - 8, ref Blockers[(int)SideToMove ^ 1]);
+                }
             }
 
             EnPassant = Square.NoSquare;
@@ -198,6 +220,64 @@
                     ? EnPassant = (Square)((int)target + 8)
                     : EnPassant = (Square)((int)target - 8);
             }
+
+            if (castling > 0) {
+                switch (target) {
+                    case Square.G1: {
+                        BitboardHelper.PopBitAtSquare(Square.H1, ref Bitboards[(int)Piece.WhiteRook]);
+                        BitboardHelper.SetBitAtSquare(Square.F1, ref Bitboards[(int)Piece.WhiteRook]);
+                        BitboardHelper.PopBitAtSquare(Square.H1, ref Blockers[(int)SideToMove]);
+                        BitboardHelper.SetBitAtSquare(Square.F1, ref Blockers[(int)SideToMove]);
+                        BitboardHelper.PopBitAtSquare(Square.H1, ref Blockers[(int)SideToMove.Both]);
+                        BitboardHelper.SetBitAtSquare(Square.F1, ref Blockers[(int)SideToMove.Both]);
+                        break;
+                    }
+                    
+                    case Square.C1: {
+                        BitboardHelper.PopBitAtSquare(Square.A1, ref Bitboards[(int)Piece.WhiteRook]);
+                        BitboardHelper.SetBitAtSquare(Square.D1, ref Bitboards[(int)Piece.WhiteRook]);
+                        BitboardHelper.PopBitAtSquare(Square.A1, ref Blockers[(int)SideToMove]);
+                        BitboardHelper.SetBitAtSquare(Square.D1, ref Blockers[(int)SideToMove]);
+                        BitboardHelper.PopBitAtSquare(Square.A1, ref Blockers[(int)SideToMove.Both]);
+                        BitboardHelper.SetBitAtSquare(Square.D1, ref Blockers[(int)SideToMove.Both]);
+                        break;
+                    }
+                    case Square.G8: {
+                        BitboardHelper.PopBitAtSquare(Square.H8, ref Bitboards[(int)Piece.BlackRook]);
+                        BitboardHelper.SetBitAtSquare(Square.F8, ref Bitboards[(int)Piece.BlackRook]);
+                        BitboardHelper.PopBitAtSquare(Square.H8, ref Blockers[(int)SideToMove]);
+                        BitboardHelper.SetBitAtSquare(Square.F8, ref Blockers[(int)SideToMove]);
+                        BitboardHelper.PopBitAtSquare(Square.H8, ref Blockers[(int)SideToMove.Both]);
+                        BitboardHelper.SetBitAtSquare(Square.F8, ref Blockers[(int)SideToMove.Both]);
+                        break;
+                    }
+                    
+                    case Square.C8: {
+                        BitboardHelper.PopBitAtSquare(Square.A8, ref Bitboards[(int)Piece.BlackRook]);
+                        BitboardHelper.SetBitAtSquare(Square.D8, ref Bitboards[(int)Piece.BlackRook]);
+                        BitboardHelper.PopBitAtSquare(Square.A8, ref Blockers[(int)SideToMove]);
+                        BitboardHelper.SetBitAtSquare(Square.D8, ref Blockers[(int)SideToMove]);
+                        BitboardHelper.PopBitAtSquare(Square.A8, ref Blockers[(int)SideToMove.Both]);
+                        BitboardHelper.SetBitAtSquare(Square.D8, ref Blockers[(int)SideToMove.Both]);
+                        break;
+                    }
+                }
+            }
+
+            Castling &= CastlingRights[(int)source];
+            Castling &= CastlingRights[(int)target];
+
+            SideToMove ^= (SideToMove)1;
+
+            if (IsSquareAttacked(
+                (Square)BitboardHelper.GetLSFBIndex(Bitboards[11 - (int)SideToMove * 6]),
+                SideToMove)) {
+                TakeBack();
+
+                return false;
+            }
+            
+            return true;
         }
 
         public bool IsSquareAttacked(Square square, SideToMove side) {

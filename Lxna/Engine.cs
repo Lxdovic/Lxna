@@ -113,16 +113,21 @@ namespace Lxna {
 
         public static void Main(string[] args) {
             Movegen.Init();
-            Board board = new Board(TRICKY_POS);
+            // Board board = new Board("r7/1P6/8/4pP2/8/8/P1P5/R3K2R w KQkq e6");
+            Board board = new Board("r3k2r/p1ppRpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBqPPP/R3K2R b KQkq - 0 1 ");
             
             board.Print();
 
             List<int> moves = board.GetLegalMoves(false);
 
             foreach (int move in moves) {
-                Move.PrintVerbose(move);
-                board.MakeMove(move);
+                Move.Print(move);
+                if (!board.MakeMove(move)) continue;
+                
                 board.Print();
+                // BitboardHelper.Print(board.Blockers[(int)board.SideToMove]);
+                // BitboardHelper.Print(board.Blockers[(int)board.SideToMove ^ 1]);
+                // BitboardHelper.Print(board.Blockers[2]);
                 board.TakeBack();
                 Console.Read();
             }
