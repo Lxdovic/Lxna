@@ -30,7 +30,7 @@ namespace Lxna {
             Square source = GetMoveSource(move);
             Square target = GetMoveTarget(move);
             
-            Console.WriteLine("Move: {0}{1}", source, target);
+            Console.Write("Move: {0}{1}", source, target);
         }
         
         public static void PrintVerbose(int move) {
