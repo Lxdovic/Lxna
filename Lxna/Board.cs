@@ -161,10 +161,10 @@
             Square source = Move.GetMoveSource(move);
             Square target = Move.GetMoveTarget(move);
             Piece piece = Move.GetMovePiece(move);
-            // Piece promoted = (Piece)Move.GetMovePromotion(move);
+            Piece promoted = (Piece)Move.GetMovePromotion(move);
             int capture = Move.GetMoveCapture(move);
-            // int doublePush = Move.GetMoveDoublePush(move);
-            // int enPassant = Move.GetMoveEnPassant(move);
+            int doublePush = Move.GetMoveDoublePush(move);
+            int enPassant = Move.GetMoveEnPassant(move);
             // int castling = Move.GetMoveCastling(move);
 
             BitboardHelper.PopBitAtSquare(source, ref Bitboards[(int)piece]);
@@ -172,12 +172,31 @@
 
             if (capture > 0) {
                 // this could be changed to ignore kings of both sides
-                for (int currentPiece = 11 - (int)SideToMove * 6; currentPiece >= 11 - ((int)SideToMove + 1) * 6; currentPiece--) {
+                for (int currentPiece = 11 - (int)SideToMove * 6; currentPiece > 11 - ((int)SideToMove + 1) * 6; currentPiece--) {
                     if (BitboardHelper.GetBitAtIndex((int)target, Bitboards[currentPiece]) > 0) {
                         BitboardHelper.PopBitAtIndex((int)target, ref Bitboards[currentPiece]);
                         break;
-                    }
+                    }   
                 }
+            }
+
+            if (promoted > 0) {
+                BitboardHelper.PopBitAtSquare(target, ref Bitboards[(int)SideToMove * 6]);
+                BitboardHelper.SetBitAtSquare(target, ref Bitboards[(int)promoted]);
+            }
+
+            if (enPassant > 0) {
+                _ = SideToMove == SideToMove.White 
+                    ? BitboardHelper.PopBitAtIndex((int)target + 8, ref Bitboards[6])
+                    : BitboardHelper.PopBitAtIndex((int)target - 8, ref Bitboards[0]);
+            }
+
+            EnPassant = Square.NoSquare;
+
+            if (doublePush > 0) {
+                _ = SideToMove == SideToMove.White
+                    ? EnPassant = (Square)((int)target + 8)
+                    : EnPassant = (Square)((int)target - 8);
             }
         }
 
