@@ -35,14 +35,12 @@ namespace Lxna {
 
             int depth;
 
-            if (depthString.Length > 1) {
-                depth = int.Parse(depthString[1]);
-            }
-
+            if (depthString.Length > 1) depth = int.Parse(depthString[1]);
+            
             else depth = 6;
          
-            Console.WriteLine("bestmove e2e4");
-            // Engine.PerfTest(depth);
+            // Console.WriteLine("bestmove e2e4");
+            Engine.PerfTest(depth);
         }
 
         public static void ParsePosition(String command) {
