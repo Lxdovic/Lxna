@@ -29,7 +29,7 @@ internal class Search {
     public static void RootNegamax(int depth) {
         int bestScore = -100000;
 
-        List<int> moves = _board.GetLegalMoves(false);
+        List<int> moves = _board.GetPseudoLegalMoves();
 
         foreach (int move in moves) {
             if (!_board.MakeMove(move)) continue;
@@ -47,7 +47,7 @@ internal class Search {
 
         if (depth == 0) return Eval.EvaluatePeStO();
         
-        List<int> moves = _board.GetLegalMoves(false);
+        List<int> moves = _board.GetPseudoLegalMoves();
 
         foreach (int move in moves) {
             if (_timer.GetDiff() > 1000) break;

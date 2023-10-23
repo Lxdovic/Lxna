@@ -74,10 +74,10 @@ namespace Lxna {
           
         }
         public static int ParseMove(Board board, String move) {
-            List<int> moves = board.GetLegalMoves(false);
+            List<int> moves = board.GetPseudoLegalMoves();
 
-            Square source = (Square)move[0] - 'a' + (8 - (move[1] - '0')) * 8;
-            Square target = (Square)move[2] - 'a' + (8 - (move[3] - '0')) * 8;
+            int source = move[0] - 'a' + (8 - (move[1] - '0')) * 8;
+            int target = move[2] - 'a' + (8 - (move[3] - '0')) * 8;
 
             foreach (var currentMove in moves) {
                 if (source == Move.GetMoveSource(currentMove) && target == Move.GetMoveTarget(currentMove)) {

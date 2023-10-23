@@ -1,7 +1,4 @@
-﻿
-using System.Diagnostics;
-
-namespace Lxna {
+﻿namespace Lxna {
     internal class Move {
         public static void PrintMoveList(List<int> moves, bool verbose) {
             foreach (var move in moves) {
@@ -17,9 +14,9 @@ namespace Lxna {
             return source | (target << 6) | (piece << 12) | (promoted << 16) | (capture << 20) | (doublePush << 21) | (enPassant << 22) | (castling << 23);
         }
 
-        public static Square GetMoveSource(int move) { return (Square)(move & 0x3f); }
-        public static Square GetMoveTarget(int move) { return (Square)((move & 0xfc0) >> 6); }
-        public static Piece GetMovePiece(int move) { return (Piece)((move & 0xf000) >> 12); }
+        public static int GetMoveSource(int move) { return move & 0x3f; }
+        public static int GetMoveTarget(int move) { return (move & 0xfc0) >> 6; }
+        public static int GetMovePiece(int move) { return (move & 0xf000) >> 12; }
         public static int GetMovePromotion(int move) { return (move & 0xf0000) >> 16; }
         public static int GetMoveCapture(int move) { return move & 0x100000; }
         public static int GetMoveDoublePush(int move) { return move & 0x200000; }
@@ -27,16 +24,16 @@ namespace Lxna {
         public static int GetMoveCastling(int move) { return move & 0x800000; }
         
         public static void Print(int move) {
-            Square source = GetMoveSource(move);
-            Square target = GetMoveTarget(move);
+            Square source = (Square)GetMoveSource(move);
+            Square target = (Square)GetMoveTarget(move);
             
-            Console.Write("Move: {0}{1}", source, target);
+            Console.Write("move {0}{1}", source, target);
         }
         
         public static void PrintVerbose(int move) {
-            Square source = GetMoveSource(move);
-            Square target = GetMoveTarget(move);
-            Piece piece = GetMovePiece(move);
+            Square source = (Square)GetMoveSource(move);
+            Square target = (Square)GetMoveTarget(move);
+            Piece piece = (Piece)GetMovePiece(move);
             int promotion = GetMovePromotion(move);
             int capture = GetMoveCapture(move);
             int doublePush = GetMoveDoublePush(move);

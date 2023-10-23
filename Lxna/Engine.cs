@@ -1,6 +1,7 @@
 ﻿﻿using System;
+ using System.Timers;
 
-namespace Lxna {
+ namespace Lxna {
     public enum Square {
         A8,
         B8,
@@ -106,32 +107,42 @@ namespace Lxna {
 
         public static void Main(string[] args) {
             Movegen.Init();
-            UniversalChessInterface.StartLoop();
+            // UniversalChessInterface.StartLoop();
+            
+            board.Print();
+
+            ulong test = 71776119061217280;
+
+            BitboardHelper.PopBitAtSquare(Square.A2, ref test);
+            BitboardHelper.Print(test);
+            
         }
 
         public static void PerfTest(int depth) {
             nodes = 0;
             
-            List<int> moves = board.GetLegalMoves(false);
+            List<int> moves = board.GetPseudoLegalMoves();
 
             Timer timer = new Timer();
             
             foreach (int move in moves) {
                 if (!board.MakeMove(move)) continue;
 
-                long cumulativeNodes = nodes;
+                long oldNodes = nodes;
                 
                 PerfDriver(depth - 1);
                 
-                long oldNodes = nodes - cumulativeNodes;
+                long cumulativeNodes = nodes - oldNodes;
                 
                 board.TakeBack();
-
+                
+                long nps = nodes * (1000 / timer.GetDiff());
+                
                 Move.Print(move);
-                Console.Write(" nodes: {0,3}\n", oldNodes);
+                Console.WriteLine("  nodes {0,6:n0}  KN/s {1,5:n0}", cumulativeNodes, nps / 1000);
             }
             
-            Console.WriteLine("Depth: {0,3}, Nodes: {1,10}, Time: {2,4}", depth, nodes, timer.GetDiff());
+            Console.WriteLine("\nperft depth {0,1} nodes {1,9:n0} time {2,4}\n", depth, nodes, timer.GetDiff());
         }
 
         public static void PerfDriver(int depth) {
@@ -141,7 +152,7 @@ namespace Lxna {
                 return;
             }
             
-            List<int> moves = board.GetLegalMoves(false);
+            List<int> moves = board.GetPseudoLegalMoves();
             
             foreach (int move in moves) {
                 if (!board.MakeMove(move)) continue;
