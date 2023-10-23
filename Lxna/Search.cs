@@ -5,17 +5,17 @@ internal class Search {
     public static Board _board;
     private static Timer _timer;
 
-    public static int Think(Board board) {
+    public static int Think(Board board, int depth = 100) {
         _timer = new Timer();
         _board = board;
 
         int bestMove = 0;
 
-        for (int currentDepth = 1; currentDepth <= 100; currentDepth++)
+        for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
         {
             RootNegamax(currentDepth);
 
-            if (_timer.GetDiff() > 1000) break;
+            if (UniversalChessInterface.TimeControl && _timer.GetDiff() > 1000) break;
 
             bestMove = _iterationMove;
             
@@ -45,12 +45,12 @@ internal class Search {
 
     public static int Negamax(int alpha, int beta, int depth) {
 
-        if (depth == 0) return Eval.EvaluatePeStO();
+        if (depth == 0) return Eval.Evaluate();
         
         List<int> moves = _board.GetPseudoLegalMoves();
 
         foreach (int move in moves) {
-            if (_timer.GetDiff() > 1000) break;
+            if (UniversalChessInterface.TimeControl && _timer.GetDiff() > 1000) break;
             if (!_board.MakeMove(move)) continue;
             int score = -Negamax(-beta, -alpha, depth - 1);
             _board.TakeBack();

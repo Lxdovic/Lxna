@@ -1,20 +1,5 @@
 ﻿namespace Lxna
 {
-    internal class BoardCopy {
-        public Square EnPassant;
-        public SideToMove SideToMove;
-        public int Castling;
-        public ulong[] Bitboards;
-        public ulong[] Blockers;
-
-        public BoardCopy(Square enPassant, SideToMove sideToMove, int castling, ulong[] bitboards, ulong[] blockers) {
-            EnPassant = enPassant;
-            SideToMove = sideToMove;
-            Castling = castling;
-            Bitboards = bitboards;
-            Blockers = blockers;
-        }
-    }
     internal class Board {
         public ulong[] Bitboards;
         public ulong[] Blockers;
@@ -55,11 +40,11 @@
         };
 
         // private List<BoardCopy> _boardHistory = new List<BoardCopy>();
-        private List<Square> _enPassantHistory = new List<Square>();
-        private List<SideToMove> _sideToMoveHistory = new List<SideToMove>();
-        private List<int> _castlingistory = new List<int>();
-        private List<ulong[]> _bitboardsHistory = new List<ulong[]>();        
-        private List<ulong[]> _blockersHistory = new List<ulong[]>();
+        private List<Square> _enPassantHistory = new();
+        private List<SideToMove> _sideToMoveHistory = new();
+        private List<int> _castlingistory = new();
+        private List<ulong[]> _bitboardsHistory = new();        
+        private List<ulong[]> _blockersHistory = new();
 
 
         // private BoardCopy _boardCopy;

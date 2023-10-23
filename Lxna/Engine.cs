@@ -107,15 +107,7 @@
 
         public static void Main(string[] args) {
             Movegen.Init();
-            // UniversalChessInterface.StartLoop();
-            
-            board.Print();
-
-            ulong test = 71776119061217280;
-
-            BitboardHelper.PopBitAtSquare(Square.A2, ref test);
-            BitboardHelper.Print(test);
-            
+            UniversalChessInterface.StartLoop();
         }
 
         public static void PerfTest(int depth) {
