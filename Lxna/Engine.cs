@@ -107,7 +107,14 @@
 
         public static void Main(string[] args) {
             Movegen.Init();
-            UniversalChessInterface.StartLoop();
+            // UniversalChessInterface.StartLoop();
+
+            while (true) {
+                board.Print();
+                int move = Search.Think(board);
+
+                board.MakeMove(move);
+            };
         }
 
         public static void PerfTest(int depth) {

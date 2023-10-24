@@ -4,6 +4,7 @@ internal class Search {
     private static int _iterationMove;
     public static Board _board;
     private static Timer _timer;
+    private static int _nodes;
 
     public static int Think(Board board, int depth = 100) {
         _timer = new Timer();
@@ -11,16 +12,17 @@ internal class Search {
 
         int bestMove = 0;
 
-        for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
-        {
+        for (int currentDepth = 1; currentDepth <= depth; currentDepth++) {
+            _nodes = 0;
+            
             RootNegamax(currentDepth);
 
-            if (UniversalChessInterface.TimeControl && _timer.GetDiff() > 1000) break;
-
+            if (UniversalChessInterface.TimeControl && _timer.GetDiff() > 3000) break;
+            
             bestMove = _iterationMove;
             
             Move.Print(bestMove);
-            Console.WriteLine(" depth {0,1}", currentDepth);
+            Console.WriteLine(" depth {0,1} nodes {1,5:n0}", currentDepth, _nodes);
         }
 
         return bestMove;
@@ -44,13 +46,15 @@ internal class Search {
     }
 
     public static int Negamax(int alpha, int beta, int depth) {
-
-        if (depth == 0) return Eval.Evaluate();
+        if (depth == 0) {
+            _nodes++;
+            return Eval.Evaluate();
+        }
         
         List<int> moves = _board.GetPseudoLegalMoves();
 
         foreach (int move in moves) {
-            if (UniversalChessInterface.TimeControl && _timer.GetDiff() > 1000) break;
+            if (UniversalChessInterface.TimeControl && _timer.GetDiff() > 3000) break;
             if (!_board.MakeMove(move)) continue;
             int score = -Negamax(-beta, -alpha, depth - 1);
             _board.TakeBack();
