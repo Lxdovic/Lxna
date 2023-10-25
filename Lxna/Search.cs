@@ -117,8 +117,7 @@ internal class Search {
             
             bestMove = IterationMove;
             
-            if (iterationScore > 50000)
-                break;
+            if (iterationScore > 50000) break;
         
             Move.Print(bestMove);
             Console.WriteLine(" depth {0,1} nodes {1,9:n0} time {2,4:n0}ms", currentDepth, _nodes, _timer.GetDiff());
@@ -132,7 +131,7 @@ internal class Search {
         
         if (depth == 0) {
             _nodes++;
-            return Evaluate();
+            return Quiescence(alpha, beta, 2);
         }
         
         ulong positionKey = Board.GetZobrist();
@@ -207,6 +206,27 @@ internal class Search {
 
         TranspositionTable[positionKey % 0x7FFFFF] =
             new TranspositionTableEntry(positionKey, bestScore, depth, flag, bestMove);
+
+        return alpha;
+    }
+
+    public static int Quiescence(int alpha, int beta, int limit) {
+        _nodes++;
+        int standPat = Evaluate();
+        if (limit == 0) return standPat;
+        if (standPat >= beta) return beta;
+        if (alpha < standPat) alpha = standPat;
+
+        List<int> moves = Board.GetPseudoLegalCaptures();
+
+        for (int i = 0; i < moves.Count; i++) {
+            if (!Board.MakeMove(moves[i])) continue;
+            int score = -Quiescence(-beta, -alpha, limit - 1);
+            Board.TakeBack();
+
+            if (score >= beta) return beta;
+            if (score > alpha) alpha = score;
+        }
 
         return alpha;
     }
