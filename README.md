@@ -1,11 +1,8 @@
-# Sebastian Lague's Chess Coding Challenge
-
-Learn more here: https://youtu.be/iScy18pVR58
+# Lxna Engine
 
 ## Authors
 
 - [@Lxdovic](https://www.github.com/Lxdovic)
-
 
 ## Features (V4)
 
