@@ -6,7 +6,7 @@
 
 ## Features
 
-- [PeSTo's Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function)
+- [Simplified Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function)
 - [Negamax](https://www.chessprogramming.org/Negamax)
 - [Alpha-Beta Pruning](https://www.chessprogramming.org/Alpha-Beta)
 - [Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening)
