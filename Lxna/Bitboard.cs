@@ -1,28 +1,28 @@
 ﻿
 namespace Lxna {
     internal class BitboardHelper {
-        public ulong PopBitAtSquare(Square square, ref ulong value) {
-            return GetBitAtSquare(square, value) > 0 ? value ^= (ulong)0x1 << (int)square : 0;
+        public static ulong PopBitAtSquare(Square square, ref ulong value) {
+            return GetBitAtSquare(square, value) > 0 ? value ^= 0x1UL << (int)square : 0;
         }
 
         public static ulong PopBitAtIndex(int index, ref ulong value) {
-            return GetBitAtIndex(index, value) > 0 ? value ^= (ulong)0x1 << index : 0;
+            return GetBitAtIndex(index, value) > 0 ? value ^= 0x1UL << index : 0;
         }
    
         public static ulong GetBitAtSquare(Square square, ulong value) {
-            return value & ((ulong)0x1 << (int)square);
+            return value & (0x1UL << (int)square);
         }
 
         public static ulong GetBitAtIndex(int index, ulong value) {
-            return value & ((ulong)0x1 << index);
+            return value & (0x1UL << index);
         }
 
         public static void SetBitAtSquare(Square square, ref ulong value) {
-            value |= (ulong)0x1 << (int)square;
+            value |= 0x1UL << (int)square;
         }
 
         public static void SetBitAtIndex(int index, ref ulong value) {
-            value |= (ulong)0x1 << index;
+            value |= 0x1UL << index;
         }
         
         public static int CountBits(ulong value) {
@@ -31,7 +31,6 @@ namespace Lxna {
             
         }
 
-        // Least Significant First Bit
         public static int GetLSFBIndex(ulong value) {
             // return System.Runtime.Intrinsics.X86.Bmi1.X64.TrailingZeroCount(Value);
             return System.Numerics.BitOperations.TrailingZeroCount(value);

@@ -40,6 +40,7 @@ namespace Lxna {
             InitLeaperAttacks();
             InitSliderAttacks(Magics.BishopRookFlag.Bishop);
             InitSliderAttacks(Magics.BishopRookFlag.Rook);
+            Board.InitHashKeys();
         }
         
         public static void InitSliderAttacks(Magics.BishopRookFlag pieceType) {
@@ -301,20 +302,20 @@ namespace Lxna {
                                     // Console.WriteLine("White Pawn Promotion: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "B");
                                     // Console.WriteLine("White Pawn Promotion: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "N");
                                     
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.WhiteQueen, 0, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.WhiteRook, 0, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.WhiteBishop, 0, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.WhiteKnight, 0, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteQueen, 0, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteRook, 0, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteBishop, 0, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteKnight, 0, 0, 0, 0));
                                 }
 
                                 else {
                                     // Console.WriteLine("White Pawn Push: {0,2}{1,2}", (Square)source, (Square)target);
-                                    moves.Add(Board.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
                                     
                                     if (source >= (int)Square.A2 && source <= (int)Square.H2 &&
                                         BitboardHelper.GetBitAtIndex(target - 8, board.Blockers[(int)SideToMove.Both]) <= 0) {
                                         // Console.WriteLine("White Pawn Double Push: {0,2}{1,2}", (Square)source, (Square)target - 8);
-                                        moves.Add(Board.EncodeMove(source, target - 8, piece, 0, 0, 1, 0, 0));
+                                        moves.Add(Move.EncodeMove(source, target - 8, piece, 0, 0, 1, 0, 0));
                                     }
                                 }
                             }
@@ -331,16 +332,16 @@ namespace Lxna {
                                     // Console.WriteLine("White Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "B");
                                     // Console.WriteLine("White Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "N");
                                     
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.WhiteQueen, 1, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.WhiteRook, 1, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.WhiteBishop, 1, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.WhiteKnight, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteQueen, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteRook, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteBishop, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteKnight, 1, 0, 0, 0));
                                 }
                             
                                 else {
                                     // Console.WriteLine("White Pawn Capture: {0,2}{1,2}", (Square)source, (Square)target);
                                     
-                                    moves.Add(Board.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
                                 }
                                 
                                 BitboardHelper.PopBitAtIndex(target, ref attacks);
@@ -354,7 +355,7 @@ namespace Lxna {
                                     
                                     // Console.WriteLine("White Pawn EnPassant Capture: {0,2}{1,2}", (Square)source, (Square)targetEnPassant);
                                     
-                                    moves.Add(Board.EncodeMove(source, targetEnPassant, piece, 0, 1, 0, 1, 0));
+                                    moves.Add(Move.EncodeMove(source, targetEnPassant, piece, 0, 1, 0, 1, 0));
                                 }
                             }
 
@@ -370,7 +371,7 @@ namespace Lxna {
                                     !board.IsSquareAttacked(Square.F1, SideToMove.Black)) {
                                     // Console.WriteLine("White Castle Kingside: E1G1");
                                     
-                                    moves.Add(Board.EncodeMove((int)Square.E1, (int)Square.G1, piece, 0, 0, 0, 0, 1));
+                                    moves.Add(Move.EncodeMove((int)Square.E1, (int)Square.G1, piece, 0, 0, 0, 0, 1));
                                 }
                             }
                         }
@@ -383,7 +384,7 @@ namespace Lxna {
                                     !board.IsSquareAttacked(Square.D1, SideToMove.Black)) {
                                     // Console.WriteLine("White Castle Queenside: E1C1");
                                     
-                                    moves.Add(Board.EncodeMove((int)Square.E1, (int)Square.C1, piece, 0, 0, 0, 0, 1));
+                                    moves.Add(Move.EncodeMove((int)Square.E1, (int)Square.C1, piece, 0, 0, 0, 0, 1));
                                 }
                             }
                         }
@@ -403,22 +404,22 @@ namespace Lxna {
                                     // Console.WriteLine("Black Pawn Promotion: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "B");
                                     // Console.WriteLine("Black Pawn Promotion: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "N");
                                     
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.BlackQueen, 0, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.BlackRook, 0, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.BlackBishop, 0, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.BlackKnight, 0, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackQueen, 0, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackRook, 0, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackBishop, 0, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackKnight, 0, 0, 0, 0));
                                 }
 
                                 else {
                                     // Console.WriteLine("Black Pawn Push: {0,2}{1,2}", (Square)source, (Square)target);
                                     
-                                    moves.Add(Board.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
 
                                     if (source >= (int)Square.A7 && source <= (int)Square.H7 &&
                                         BitboardHelper.GetBitAtIndex(target + 8, board.Blockers[(int)SideToMove.Both]) <= 0) {
                                         // Console.WriteLine("Black Pawn Double Push: {0,2}{1,2}", (Square)source, (Square)target + 8);
                                         
-                                        moves.Add(Board.EncodeMove(source, target + 8, piece, 0, 0, 1, 0, 0));
+                                        moves.Add(Move.EncodeMove(source, target + 8, piece, 0, 0, 1, 0, 0));
                                     }
                                 }
                             }
@@ -435,16 +436,16 @@ namespace Lxna {
                                     // Console.WriteLine("Black Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "B");
                                     // Console.WriteLine("Black Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "N");
                                     
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.BlackQueen, 1, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.BlackRook, 1, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.BlackBishop, 1, 0, 0, 0));
-                                    moves.Add(Board.EncodeMove(source, target, piece, (int)Piece.BlackKnight, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackQueen, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackRook, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackBishop, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackKnight, 1, 0, 0, 0));
                                 }
                             
                                 else {
                                     // Console.WriteLine("Black Pawn Capture: {0,2}{1,2}", (Square)source, (Square)target);
                                     
-                                    moves.Add(Board.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
                                 }
 
 
@@ -460,7 +461,7 @@ namespace Lxna {
                                     
                                     // Console.WriteLine("Black Pawn EnPassant Capture: {0,2}{1,2}", (Square)source, (Square)targetEnPassant);
                                     
-                                    moves.Add(Board.EncodeMove(source, targetEnPassant, piece, 0, 1, 0, 1, 0));
+                                    moves.Add(Move.EncodeMove(source, targetEnPassant, piece, 0, 1, 0, 1, 0));
                                 }
                             }
 
@@ -476,7 +477,7 @@ namespace Lxna {
                                     !board.IsSquareAttacked(Square.F8, SideToMove.White)) {
                                     // Console.WriteLine("Black Castle Kingside: E8G8");
                                     
-                                    moves.Add(Board.EncodeMove((int)Square.E8, (int)Square.G8, piece, 0, 0, 0, 0, 1));
+                                    moves.Add(Move.EncodeMove((int)Square.E8, (int)Square.G8, piece, 0, 0, 0, 0, 1));
                                 }
                             }
                         }
@@ -489,7 +490,7 @@ namespace Lxna {
                                     !board.IsSquareAttacked(Square.D8, SideToMove.White)) {
                                     // Console.WriteLine("Black Castle Queenside: E8C8");
                                     
-                                    moves.Add(Board.EncodeMove((int)Square.E8, (int)Square.C8, piece, 0, 0, 0, 0, 1));
+                                    moves.Add(Move.EncodeMove((int)Square.E8, (int)Square.C8, piece, 0, 0, 0, 0, 1));
                                 }
                             }
                         }
@@ -512,13 +513,13 @@ namespace Lxna {
                                     : BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.White]) <= 0) {
                                 // Console.WriteLine("Knight Quiet Move: {0,2}{1,2}", (Square)source, (Square)target);
                                     
-                                moves.Add(Board.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
                             }
                             
                             else {
                                 // Console.WriteLine("Knight Capture: {0,2}{1,2}", (Square)source, (Square)target);
                                 
-                                moves.Add(Board.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
                             }
                             
                             BitboardHelper.PopBitAtIndex(target, ref attacks);
@@ -544,13 +545,13 @@ namespace Lxna {
                                     : BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.White]) <= 0) {
                                 // Console.WriteLine("Bishop Quiet Move: {0,2}{1,2}", (Square)source, (Square)target);
                                 
-                                moves.Add(Board.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
                             }
                             
                             else {
                                 // Console.WriteLine("Bishop Capture: {0,2}{1,2}", (Square)source, (Square)target);
                                 
-                                moves.Add(Board.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
                             }
                             
                             BitboardHelper.PopBitAtIndex(target, ref attacks);
@@ -576,13 +577,13 @@ namespace Lxna {
                                     : BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.White]) <= 0) {
                                 // Console.WriteLine("Rook Quiet Move: {0,2}{1,2}", (Square)source, (Square)target);
                                 
-                                moves.Add(Board.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
                             }
                             
                             else {
                                 // Console.WriteLine("Rook Capture: {0,2}{1,2}", (Square)source, (Square)target);
                                 
-                                moves.Add(Board.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
                             }
                             
                             BitboardHelper.PopBitAtIndex(target, ref attacks);
@@ -608,13 +609,13 @@ namespace Lxna {
                                     : BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.White]) <= 0) {
                                 // Console.WriteLine("Queen Quiet Move: {0,2}{1,2}", (Square)source, (Square)target);
                                 
-                                moves.Add(Board.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
                             }
                             
                             else {
                                 // Console.WriteLine("Queen Capture: {0,2}{1,2}", (Square)source, (Square)target);
                                 
-                                moves.Add(Board.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
                             }
                             
                             BitboardHelper.PopBitAtIndex(target, ref attacks);
@@ -640,13 +641,259 @@ namespace Lxna {
                                     : BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.White]) <= 0) {
                                 // Console.WriteLine("King Quiet Move: {0,2}{1,2}", (Square)source, (Square)target);
                                 
-                                moves.Add(Board.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 0, 0, 0, 0));
                             }
                             
                             else {
                                 // Console.WriteLine("King Capture: {0,2}{1,2}", (Square)source, (Square)target);
                                 
-                                moves.Add(Board.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                            }
+                            
+                            BitboardHelper.PopBitAtIndex(target, ref attacks);
+                        }
+
+                        BitboardHelper.PopBitAtIndex(source, ref bitboard);
+                    }
+                }
+            }
+
+            return moves;
+        }
+        
+        public static List<int> GenerateCaptureMoves(Board board) {
+            List<int> moves = new List<int>();
+            int source, target;
+            ulong attacks;
+                
+            // This whole sequence is heavily repetitive and could easily be merged into separate functions
+            for (int piece = (int)Piece.WhitePawn; piece <= (int)Piece.BlackKing; piece++) {
+                ulong bitboard = board.Bitboards[piece];
+
+                if (board.SideToMove == SideToMove.White) {
+                    if ((Piece)piece == Piece.WhitePawn) {
+                        while (bitboard > 0) {
+                            source = BitboardHelper.GetLSFBIndex(bitboard);
+                            target = source - 8;
+
+                            attacks = PawnAttacks[(int)board.SideToMove, source] &
+                                      board.Blockers[(int)SideToMove.Black];
+                            
+                            while (attacks > 0) {
+                                target = BitboardHelper.GetLSFBIndex(attacks);
+                                
+                                if (source >= (int)Square.A7 && source <= (int)Square.H7) {
+                                    // Console.WriteLine("White Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "Q");
+                                    // Console.WriteLine("White Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "R");
+                                    // Console.WriteLine("White Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "B");
+                                    // Console.WriteLine("White Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "N");
+                                    
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteQueen, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteRook, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteBishop, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.WhiteKnight, 1, 0, 0, 0));
+                                }
+                            
+                                else {
+                                    // Console.WriteLine("White Pawn Capture: {0,2}{1,2}", (Square)source, (Square)target);
+                                    
+                                    moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                                }
+                                
+                                BitboardHelper.PopBitAtIndex(target, ref attacks);
+                            }
+
+                            if (board.EnPassant != Square.NoSquare) {
+                                ulong enPassantAttacks = PawnAttacks[(int)board.SideToMove, source] & ((ulong)0x1 << (int)board.EnPassant);
+
+                                if (enPassantAttacks > 0) {
+                                    int targetEnPassant = BitboardHelper.GetLSFBIndex(enPassantAttacks);
+                                    
+                                    // Console.WriteLine("White Pawn EnPassant Capture: {0,2}{1,2}", (Square)source, (Square)targetEnPassant);
+                                    
+                                    moves.Add(Move.EncodeMove(source, targetEnPassant, piece, 0, 1, 0, 1, 0));
+                                }
+                            }
+
+                            BitboardHelper.PopBitAtIndex(source, ref bitboard);
+                        }
+                    }
+                }
+
+                else {
+                    if ((Piece)piece == Piece.BlackPawn) {
+                        while (bitboard > 0) {
+                            source = BitboardHelper.GetLSFBIndex(bitboard);
+                            target = source + 8;
+                            
+                            attacks = PawnAttacks[(int)board.SideToMove, source] &
+                                      board.Blockers[(int)SideToMove.White];
+                            
+                            while (attacks > 0) {
+                                target = BitboardHelper.GetLSFBIndex(attacks);
+                                
+                                if (source >= (int)Square.A2 && source <= (int)Square.H2) {
+                                    // Console.WriteLine("Black Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "Q");
+                                    // Console.WriteLine("Black Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "R");
+                                    // Console.WriteLine("Black Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "B");
+                                    // Console.WriteLine("Black Pawn Promotion Capture: {0,2}{1,2} -> {2,0}", (Square)source, (Square)target, "N");
+                                    
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackQueen, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackRook, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackBishop, 1, 0, 0, 0));
+                                    moves.Add(Move.EncodeMove(source, target, piece, (int)Piece.BlackKnight, 1, 0, 0, 0));
+                                }
+                            
+                                else {
+                                    // Console.WriteLine("Black Pawn Capture: {0,2}{1,2}", (Square)source, (Square)target);
+                                    
+                                    moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                                }
+
+
+                                BitboardHelper.PopBitAtIndex(target, ref attacks);
+                            }
+
+                            if (board.EnPassant != Square.NoSquare) {
+                                ulong enPassantAttacks = 
+                                    PawnAttacks[(int)board.SideToMove, source] & ((ulong)0x1 << (int)board.EnPassant);
+
+                                if (enPassantAttacks > 0) {
+                                    int targetEnPassant = BitboardHelper.GetLSFBIndex(enPassantAttacks);
+                                    
+                                    // Console.WriteLine("Black Pawn EnPassant Capture: {0,2}{1,2}", (Square)source, (Square)targetEnPassant);
+                                    
+                                    moves.Add(Move.EncodeMove(source, targetEnPassant, piece, 0, 1, 0, 1, 0));
+                                }
+                            }
+
+                            BitboardHelper.PopBitAtIndex(source, ref bitboard);
+                        }
+                    }
+                }
+                
+                if (board.SideToMove == SideToMove.White ? piece == (int)Piece.WhiteKnight : piece == (int)Piece.BlackKnight) {
+                    while (bitboard > 0) {
+                        source = BitboardHelper.GetLSFBIndex(bitboard);
+
+                        attacks = KnightAttacks[source] & (board.SideToMove == SideToMove.White
+                            ? ~board.Blockers[(int)SideToMove.White]
+                            : ~board.Blockers[(int)SideToMove.Black]);
+
+                        while (attacks > 0) {
+                            target = BitboardHelper.GetLSFBIndex(attacks);
+
+                            if (board.SideToMove == SideToMove.White
+                                    ? BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.Black]) > 0
+                                    : BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.White]) > 0) {
+                                // Console.WriteLine("Knight Quiet Move: {0,2}{1,2}", (Square)source, (Square)target);
+                                    
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                            }
+                            
+                            BitboardHelper.PopBitAtIndex(target, ref attacks);
+                        }
+
+                        BitboardHelper.PopBitAtIndex(source, ref bitboard);
+                    }
+                }
+                
+                if (board.SideToMove == SideToMove.White ? piece == (int)Piece.WhiteBishop : piece == (int)Piece.BlackBishop) {
+                    while (bitboard > 0) {
+                        source = BitboardHelper.GetLSFBIndex(bitboard);
+
+                        attacks = GetBishopAttacks((Square)source, board.Blockers[(int)SideToMove.Both]) & (board.SideToMove == SideToMove.White
+                            ? ~board.Blockers[(int)SideToMove.White]
+                            : ~board.Blockers[(int)SideToMove.Black]);
+
+                        while (attacks > 0) {
+                            target = BitboardHelper.GetLSFBIndex(attacks);
+
+                            if (board.SideToMove == SideToMove.White
+                                    ? BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.Black]) > 0
+                                    : BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.White]) > 0) {
+                                // Console.WriteLine("Bishop Capture: {0,2}{1,2}", (Square)source, (Square)target);
+                                    
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                            }
+                            
+                            BitboardHelper.PopBitAtIndex(target, ref attacks);
+                        }
+
+                        BitboardHelper.PopBitAtIndex(source, ref bitboard);
+                    }
+                }
+                
+                if (board.SideToMove == SideToMove.White ? piece == (int)Piece.WhiteRook : piece == (int)Piece.BlackRook) {
+                    while (bitboard > 0) {
+                        source = BitboardHelper.GetLSFBIndex(bitboard);
+
+                        attacks = GetRookAttacks((Square)source, board.Blockers[(int)SideToMove.Both]) & (board.SideToMove == SideToMove.White
+                            ? ~board.Blockers[(int)SideToMove.White]
+                            : ~board.Blockers[(int)SideToMove.Black]);
+
+                        while (attacks > 0) {
+                            target = BitboardHelper.GetLSFBIndex(attacks);
+                            
+                            if (board.SideToMove == SideToMove.White
+                                    ? BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.Black]) > 0
+                                    : BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.White]) > 0) {
+                                // Console.WriteLine("Rook Capture: {0,2}{1,2}", (Square)source, (Square)target);
+                                    
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                            }
+                            
+                            BitboardHelper.PopBitAtIndex(target, ref attacks);
+                        }
+
+                        BitboardHelper.PopBitAtIndex(source, ref bitboard);
+                    }
+                }
+                
+                if (board.SideToMove == SideToMove.White ? piece == (int)Piece.WhiteQueen : piece == (int)Piece.BlackQueen) {
+                    while (bitboard > 0) {
+                        source = BitboardHelper.GetLSFBIndex(bitboard);
+
+                        attacks = GetQueenAttacks((Square)source, board.Blockers[(int)SideToMove.Both]) & (board.SideToMove == SideToMove.White
+                            ? ~board.Blockers[(int)SideToMove.White]
+                            : ~board.Blockers[(int)SideToMove.Black]);
+
+                        while (attacks > 0) {
+                            target = BitboardHelper.GetLSFBIndex(attacks);
+
+                            
+                            if (board.SideToMove == SideToMove.White
+                                    ? BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.Black]) > 0
+                                    : BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.White]) > 0) {
+                                // Console.WriteLine("Queen Capture: {0,2}{1,2}", (Square)source, (Square)target);
+                                    
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
+                            }
+                            
+                            BitboardHelper.PopBitAtIndex(target, ref attacks);
+                        }
+
+                        BitboardHelper.PopBitAtIndex(source, ref bitboard);
+                    }
+                }
+                
+                if (board.SideToMove == SideToMove.White ? piece == (int)Piece.WhiteKing : piece == (int)Piece.BlackKing) {
+                    while (bitboard > 0) {
+                        source = BitboardHelper.GetLSFBIndex(bitboard);
+
+                        attacks = KingAttacks[source] & (board.SideToMove == SideToMove.White
+                            ? ~board.Blockers[(int)SideToMove.White]
+                            : ~board.Blockers[(int)SideToMove.Black]);
+
+                        while (attacks > 0) {
+                            target = BitboardHelper.GetLSFBIndex(attacks);
+
+                            if (board.SideToMove == SideToMove.White
+                                    ? BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.Black]) > 0
+                                    : BitboardHelper.GetBitAtIndex(target, board.Blockers[(int)SideToMove.White]) > 0) {
+                                // Console.WriteLine("King Capture: {0,2}{1,2}", (Square)source, (Square)target);
+                                    
+                                moves.Add(Move.EncodeMove(source, target, piece, 0, 1, 0, 0, 0));
                             }
                             
                             BitboardHelper.PopBitAtIndex(target, ref attacks);
