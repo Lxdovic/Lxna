@@ -103,18 +103,11 @@
         public static readonly String KILLER_POS = "rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1";
         public static readonly String CMK_POS = "r2q1rk1/ppp2ppp/2n1bn2/2b1p3/3pP3/3P1NPP/PPP1NPB1/R1BQ1RK1 b - - 0 9 ";
 
-        public static Board board = new Board(START_POS);
+        public static Board board = new(START_POS);
 
         public static void Main(string[] args) {
             Movegen.Init();
-            // UniversalChessInterface.StartLoop();
-
-            while (true) {
-                board.Print();
-                int move = Search.Think(board);
-
-                board.MakeMove(move);
-            };
+            UniversalChessInterface.StartLoop();
         }
 
         public static void PerfTest(int depth) {

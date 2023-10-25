@@ -40,6 +40,7 @@ namespace Lxna {
             InitLeaperAttacks();
             InitSliderAttacks(Magics.BishopRookFlag.Bishop);
             InitSliderAttacks(Magics.BishopRookFlag.Rook);
+            Board.InitHashKeys();
         }
         
         public static void InitSliderAttacks(Magics.BishopRookFlag pieceType) {

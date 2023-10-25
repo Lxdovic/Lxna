@@ -38,6 +38,10 @@
             15, 15, 15, 15, 15, 15, 15, 15,
             13, 15, 15, 15, 12, 15, 15, 14
         };
+        public static ulong[,] PieceKeys = new ulong[12, 64];
+        public static ulong[] EnPassantKeys = new ulong[64];
+        public static ulong[] CastlingKeys = new ulong[16];
+        public static ulong SideToMoveKey;
 
         // private List<BoardCopy> _boardHistory = new List<BoardCopy>();
         private List<Square> _enPassantHistory = new();
@@ -46,8 +50,61 @@
         private List<ulong[]> _bitboardsHistory = new();        
         private List<ulong[]> _blockersHistory = new();
 
+        public ulong GetZobrist() {
+            ulong finalKey = 0x0UL;
+            ulong bitboard;
 
+            for (int piece = (int)Piece.WhitePawn; piece <= (int)Piece.BlackKing; piece++) {
+                bitboard = Bitboards[piece];
+
+                while (bitboard > 0) {
+                    int square = BitboardHelper.GetLSFBIndex(bitboard);
+
+                    finalKey ^= PieceKeys[piece, square];
+
+                    BitboardHelper.PopBitAtIndex(square, ref bitboard);
+                }
+            }
+
+            if (EnPassant != Square.NoSquare) {
+                finalKey ^= EnPassantKeys[(int)EnPassant];
+            }
+            
+            finalKey ^= CastlingKeys[Castling];
+
+            if (SideToMove == SideToMove.Black) finalKey ^= SideToMoveKey;
+
+            return finalKey;
+        }
+        public static void InitHashKeys() {
+            uint RNGState = 1804289383;
+            
+            for (int piece = (int)Piece.WhitePawn; piece <= (int)Piece.BlackKing; piece++) {
+                for (int square = 0; square < 64; square++) {
+                    PieceKeys[piece, square] = Magics.GetRandomNumberU64();
+                }
+            }
+            
+            for (int square = 0; square < 64; square++) {
+                EnPassantKeys[square] = Magics.GetRandomNumberU64();
+            }
+            
+            for (int index = 0; index < 16; index++) {
+                CastlingKeys[index] = Magics.GetRandomNumberU64();
+            }
+            
+            SideToMoveKey = Magics.GetRandomNumberU64();
+        }
         // private BoardCopy _boardCopy;
+        public bool IsInCheck() {
+            if (IsSquareAttacked(
+                (Square)BitboardHelper.GetLSFBIndex(Bitboards[SideToMove == SideToMove.White ? (int)Piece.WhiteKing : (int)Piece.BlackKing]), 
+                (SideToMove)((int)SideToMove ^ 1))) {
+                return true;
+            }
+
+            return false;
+        }
 
         public Board(String fen) {
             // this originally was in ParseFen() but it got moved here to fix warnings

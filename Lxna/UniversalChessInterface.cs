@@ -2,6 +2,7 @@
 namespace Lxna {
     internal class UniversalChessInterface {
         public static bool TimeControl = true;
+        public static int AllowedTime = 1000;
         public static void StartLoop() {
             Console.WriteLine("Lxna engine by Lxdovic (https://github.com/Lxdovic)");
             Console.WriteLine("UCI Protocol documentation available -> https://gist.github.com/Lxdovic/20f3d65d8c3459bb20ea3ce8d595ec4b\n");
@@ -38,9 +39,7 @@ namespace Lxna {
             if (depthString.Length > 1) {
                 Engine.board.Print();
                 TimeControl = false;
-                int bestMove = Search.Think(Engine.board, int.Parse(depthString[1]));
-                
-                Move.PrintVerbose(bestMove);
+                Search.Think(Engine.board, int.Parse(depthString[1]));
             }
             else if (perftString.Length > 1) {
                 Engine.PerfTest(int.Parse(perftString[1]));
