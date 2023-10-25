@@ -1,7 +1,6 @@
 ﻿﻿using System;
- using System.Timers;
 
- namespace Lxna {
+namespace Lxna {
     public enum Square {
         A8,
         B8,
@@ -94,65 +93,42 @@
         BlackQueen,
         BlackKing
     }
+    public enum PromotedPiece {
+        WhiteKnight,
+        WhiteBishop,
+        WhiteRook,
+        WhiteQueen,
+        BlackKnight,
+        BlackBishop,
+        BlackRook,
+        BlackQueen,
+    }
+
+    public struct MoveList {
+        private int[] moves;
+        private int count;
+    }
     
     internal class Engine {
-        public static int nodes;
         public static readonly String EMPTY_BOARD = "8/8/8/8/8/8/8/8 b - - ";
-        public static readonly String TRICKY_POS = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
+        public static readonly String TRICKY_POS = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ";
         public static readonly String START_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ";
         public static readonly String KILLER_POS = "rnbqkb1r/pp1p1pPp/8/2p1pP2/1P1P4/3P3P/P1P1P3/RNBQKBNR w KQkq e6 0 1";
         public static readonly String CMK_POS = "r2q1rk1/ppp2ppp/2n1bn2/2b1p3/3pP3/3P1NPP/PPP1NPB1/R1BQ1RK1 b - - 0 9 ";
 
-        public static Board board = new(START_POS);
-
         public static void Main(string[] args) {
             Movegen.Init();
-            UniversalChessInterface.StartLoop();
-        }
-
-        public static void PerfTest(int depth) {
-            nodes = 0;
+            Board board1 = new Board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq c6   0 1 ");
             
-            List<int> moves = board.GetPseudoLegalMoves();
+            board1.Print();
+            board1.Copy();
 
-            Timer timer = new Timer();
+            board1.ParseFen(EMPTY_BOARD);
             
-            foreach (int move in moves) {
-                if (!board.MakeMove(move)) continue;
+            board1.Print();
+            board1.TakeBack();
+            board1.Print();
 
-                long oldNodes = nodes;
-                
-                PerfDriver(depth - 1);
-                
-                long cumulativeNodes = nodes - oldNodes;
-                
-                board.TakeBack();
-                
-                long nps = nodes * (1000 / timer.GetDiff());
-                
-                Move.Print(move);
-                Console.WriteLine("  nodes {0,6:n0}  KN/s {1,5:n0}", cumulativeNodes, nps / 1000);
-            }
-            
-            Console.WriteLine("\nperft depth {0,1} nodes {1,9:n0} time {2,4}\n", depth, nodes, timer.GetDiff());
-        }
-
-        public static void PerfDriver(int depth) {
-            if (depth == 0) {
-                nodes++;
-
-                return;
-            }
-            
-            List<int> moves = board.GetPseudoLegalMoves();
-            
-            foreach (int move in moves) {
-                if (!board.MakeMove(move)) continue;
-                
-                PerfDriver(depth - 1);
-                
-                board.TakeBack();
-            }
         }
     }
 }
