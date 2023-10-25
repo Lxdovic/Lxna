@@ -4,7 +4,7 @@
 
 - [@Lxdovic](https://www.github.com/Lxdovic)
 
-## Features (V4)
+## Features
 
 - [PeSTo's Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function)
 - [Negamax](https://www.chessprogramming.org/Negamax)
