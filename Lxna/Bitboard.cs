@@ -1,36 +1,46 @@
 ﻿
+using System.Runtime.CompilerServices;
+
 namespace Lxna {
     internal class BitboardHelper {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong PopBitAtSquare(Square square, ref ulong value) {
             return GetBitAtSquare(square, value) > 0 ? value ^= 0x1UL << (int)square : 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong PopBitAtIndex(int index, ref ulong value) {
             return GetBitAtIndex(index, value) > 0 ? value ^= 0x1UL << index : 0;
         }
    
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong GetBitAtSquare(Square square, ulong value) {
             return value & (0x1UL << (int)square);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong GetBitAtIndex(int index, ulong value) {
             return value & (0x1UL << index);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetBitAtSquare(Square square, ref ulong value) {
             value |= 0x1UL << (int)square;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetBitAtIndex(int index, ref ulong value) {
             value |= 0x1UL << index;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int CountBits(ulong value) {
             // return System.Runtime.Intrinsics.X86.Popcnt.PopCount(Value);
             return System.Numerics.BitOperations.PopCount(value);
             
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetLSFBIndex(ulong value) {
             // return System.Runtime.Intrinsics.X86.Bmi1.X64.TrailingZeroCount(Value);
             return System.Numerics.BitOperations.TrailingZeroCount(value);

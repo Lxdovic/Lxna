@@ -1,4 +1,6 @@
-﻿namespace Lxna {
+﻿using System.Runtime.CompilerServices;
+
+namespace Lxna {
     internal class Move {
         public static void PrintMoveList(List<int> moves, bool verbose) {
             foreach (var move in moves) {
@@ -8,19 +10,29 @@
             }
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int EncodeMove(int source, int target, int piece, int promoted, int capture,
             int doublePush, int enPassant,
             int castling) {
             return source | (target << 6) | (piece << 12) | (promoted << 16) | (capture << 20) | (doublePush << 21) | (enPassant << 22) | (castling << 23);
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMoveSource(int move) { return move & 0x3f; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMoveTarget(int move) { return (move & 0xfc0) >> 6; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMovePiece(int move) { return (move & 0xf000) >> 12; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMovePromotion(int move) { return (move & 0xf0000) >> 16; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMoveCapture(int move) { return move & 0x100000; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMoveDoublePush(int move) { return move & 0x200000; }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMoveEnPassant(int move) { return move & 0x400000; }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMoveCastling(int move) { return move & 0x800000; }
         
         public static void Print(int move) {
