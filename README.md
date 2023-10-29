@@ -68,7 +68,7 @@ Castling:              KQkq
 
 ### Set a position
 
-`position \[fen <fenstring> | startpos] moves \<move1> ... \<movei></b`
+`position [fen <fenstring> | startpos] moves <move1> ... <movei>`
 
 example input
 
