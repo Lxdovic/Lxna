@@ -25,6 +25,8 @@ public class Search {
         _time = time;
         _timeControl = timeControl;
         
+        Array.Clear(TranspositionTable, 0, TranspositionTable.Length);
+        
         int currentDepth, bestMove = 0;
 
         for (currentDepth = 1; currentDepth <= depth; currentDepth++) {
@@ -41,6 +43,11 @@ public class Search {
             Move.Print(bestMove);
             Console.WriteLine(" depth {0,2} score {1,4}, nodes {2,9:n0} time {3,4:n0}ms", currentDepth, IterationScore, _nodes, _timer.GetDiff());
         }
+
+        Console.WriteLine("bestmove {0}{1}{2}", 
+            ((Square)Move.GetMoveSource(bestMove)).ToString().ToLower(), 
+            ((Square)Move.GetMoveTarget(bestMove)).ToString().ToLower(), 
+            Move.GetMovePromotion(bestMove) > 0 ? Board.PiecesChar[(Piece)Move.GetMovePromotion(bestMove)].ToLower() : "");
 
         return bestMove;
     }
