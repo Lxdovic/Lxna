@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 
 namespace Lxna {
-    internal class BitboardHelper {
+    public class BitboardHelper {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong PopBitAtSquare(Square square, ref ulong value) {
             return GetBitAtSquare(square, value) > 0 ? value ^= 0x1UL << (int)square : 0;

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 
 namespace Lxna {
-    internal class Move {
+    public class Move {
         public static void PrintMoveList(List<int> moves, bool verbose) {
             foreach (var move in moves) {
                 if (!verbose) { Print(move); continue; }

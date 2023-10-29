@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 
 namespace Lxna {
-    internal class Movegen {
+    public class Movegen {
         // 2d array because pawns move differently based on the side (White/Black)
         // first dimension is for side to move and the second one is the actual tables
         public static ulong[,] PawnAttacks = new ulong[2, 64];

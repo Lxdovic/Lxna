@@ -1,138 +1,45 @@
 namespace Lxna; 
 
-internal class Search {
-    private static int _iterationMove;
+public class Search {
+    public static int IterationMove;
+    public static int IterationScore;
     private static Board _board = new(Engine.StartPos);
     private static Timer _timer = new();
-    private static int _nodes;
-    private static readonly int[] PieceWeights = {0, 100, 310, 320, 500, 900, 20000 };
-    // private static readonly int[] PieceWeights = {0, 100, 310, 330, 500, 1000, 10000 };
-    private static readonly int[,] PieceSquareTables = {
-        {
-            0, 0, 0, 0, 0, 0, 0, 0,
-            50, 50, 50, 50, 50, 50, 50, 50,
-            10, 10, 20, 30, 30, 20, 10, 10,
-            5, 5, 10, 25, 25, 10, 5, 5,
-            0, 0, 0, 20, 20, 0, 0, 0,
-            5, -5, -10, 0, 0, -10, -5, 5,
-            5, 10, 10, -20, -20, 10, 10, 5,
-            0, 0, 0, 0, 0, 0, 0, 0
-        }, 
-        {
-            -50, -40, -30, -30, -30, -30, -40, -50,
-            -40, -20, 0, 0, 0, 0, -20, -40,
-            -30, 0, 10, 15, 15, 10, 0, -30,
-            -30, 5, 15, 20, 20, 15, 5, -30,
-            -30, 0, 15, 20, 20, 15, 0, -30,
-            -30, 5, 10, 15, 15, 10, 5, -30,
-            -40, -20, 0, 5, 5, 0, -20, -40,
-            -50, -40, -30, -30, -30, -30, -40, -50,
-        }, 
-        {
-            -20, -10, -10, -10, -10, -10, -10, -20,
-            -10, 0, 0, 0, 0, 0, 0, -10,
-            -10, 0, 5, 10, 10, 5, 0, -10,
-            -10, 5, 5, 10, 10, 5, 5, -10,
-            -10, 0, 10, 10, 10, 10, 0, -10,
-            -10, 10, 10, 10, 10, 10, 10, -10,
-            -10, 5, 0, 0, 0, 0, 5, -10,
-            -20, -10, -10, -10, -10, -10, -10, -20,
-        }, 
-        {
-            0, 0, 0, 0, 0, 0, 0, 0,
-            5, 10, 10, 10, 10, 10, 10, 5,
-            -5, 0, 0, 0, 0, 0, 0, -5,
-            -5, 0, 0, 0, 0, 0, 0, -5,
-            -5, 0, 0, 0, 0, 0, 0, -5,
-            -5, 0, 0, 0, 0, 0, 0, -5,
-            -5, 0, 0, 0, 0, 0, 0, -5,
-            0, 0, 0, 5, 5, 0, 0, 0
-        },
-        {
-            -20, -10, -10, -5, -5, -10, -10, -20,
-            -10, 0, 0, 0, 0, 0, 0, -10,
-            -10, 0, 5, 5, 5, 5, 0, -10,
-            -5, 0, 5, 5, 5, 5, 0, -5,
-            0, 0, 5, 5, 5, 5, 0, -5,
-            -10, 5, 5, 5, 5, 5, 0, -10,
-            -10, 0, 5, 0, 0, 0, 0, -10,
-            -20, -10, -10, -5, -5, -10, -10, -20
-        }, 
-        {
-            -30, -40, -40, -50, -50, -40, -40, -30,
-            -30, -40, -40, -50, -50, -40, -40, -30,
-            -30, -40, -40, -50, -50, -40, -40, -30,
-            -30, -40, -40, -50, -50, -40, -40, -30,
-            -20, -30, -30, -40, -40, -30, -30, -20,
-            -10, -20, -20, -20, -20, -20, -20, -10,
-            20, 20, 0, 0, 0, 0, 20, 20,
-            20, 30, 10, 0, 0, 10, 30, 20
-        }, 
-        {
-            0, 0, 0, 0, 0, 0, 0, 0, 5, 10, 10, -20, -20, 10, 10, 5, 5, -5, -10, 0, 0, -10, -5, 5, 0, 0, 0, 20, 20, 0, 0,
-            0, 5, 5, 10, 25, 25, 10, 5, 5, 10, 10, 20, 30, 30, 20, 10, 10, 50, 50, 50, 50, 50, 50, 50, 50, 0, 0, 0, 0,
-            0, 0, 0, 0
-        }, 
-        {
-            -50,
-            -40, -30, -30, -30, -30, -40, -50, -40, -20, 0, 5, 5, 0, -20, -40, -30, 5, 10, 15, 15, 10, 5, -30, -30, 0,
-            15, 20, 20, 15, 0, -30, -30, 5, 15, 20, 20, 15, 5, -30, -30, 0, 10, 15, 15, 10, 0, -30, -40, -20, 0, 0, 0,
-            0, -20, -40, -50, -40, -30, -30, -30, -30, -40, -50
-        }, 
-        {
-            -20, -10, -10, -10, -10, -10, -10, -20, -10, 5, 0, 0, 0, 0, 5, -10, -10, 10, 10, 10, 10, 10, 10, -10, -10,
-            0, 10, 10, 10, 10, 0, -10, -10, 5, 5, 10, 10, 5, 5, -10, -10, 0, 5, 10, 10, 5, 0, -10, -10, 0, 0, 0, 0, 0,
-            0, -10, -20, -10, -10, -10, -10, -10, -10, -20
-        }, 
-        {
-            0, 0, 0, 5, 5, 0, 0, 0, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 0, 0, 0, -5, -5, 0,
-            0, 0, 0, 0, 0, -5, -5, 0, 0, 0, 0, 0, 0, -5, 5, 10, 10, 10, 10, 10, 10, 5, 0, 0, 0, 0, 0, 0, 0, 0
-        },
-        {
-            -20, -10, -10, -5, -5, -10, -10, -20, -10, 0, 0, 0, 0, 5, 0, -10, -10, 0, 5, 5, 5, 5, 5, -10, -5, 0, 5, 5,
-            5, 5, 0, 0, -5, 0, 5, 5, 5, 5, 0, -5, -10, 0, 5, 5, 5, 5, 0, -10, -10, 0, 0, 0, 0, 0, 0, -10, -20, -10, -10,
-            -5, -5, -10, -10, -20
-        }, 
-        {
-            20, 30, 10, 0, 0, 10, 30, 20, 20, 20, 0, 0, 0, 0, 20, 20, -10, -20, -20, -20, -20, -20, -20, -10, -20, -30, -30, -40, -40, -30, -30, -20, -30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30
-        }
-    };
+    private static int _nodes; 
+    private static readonly int[] PieceWeights = {100, 310, 330, 500, 1000, 10000 };
     public enum MoveFlag { Alpha, Exact, Beta }
     public record struct TranspositionTableEntry(ulong Key, int Score, int Depth, MoveFlag Flag, int Move);
     public static readonly TranspositionTableEntry[] TranspositionTable = new TranspositionTableEntry[0x7FFFFF];
-    public static bool TimeControl = true;
+    private static bool _timeControl = true;
     private static bool _stopSearch;
-    public static int WhiteTime = 60000;
-    public static int BlackTime = 60000;
-    public static int SideTime = 0;
+    private static int _time;
+    
     public static void Stop() {
         _stopSearch = true;
     }
 
-    public static int Think(Board board, int depth = Int32.MaxValue) {
+    public static int Think(Board board, bool timeControl, int time = 1000, int depth = 100) {
         _timer = new Timer();
         _stopSearch = false;
         _board = board;
-        SideTime = _board.SideToMove == SideToMove.White ? WhiteTime : BlackTime;
-        Array.Clear(TranspositionTable, 0, TranspositionTable.Length);
-
+        _time = time;
+        _timeControl = timeControl;
+        
         int currentDepth, bestMove = 0;
-        int alpha = -100000;
-        int beta = 100000;
 
         for (currentDepth = 1; currentDepth <= depth; currentDepth++) {
             _nodes = 0;
             
-            int iterationScore = Negamax(alpha, beta, currentDepth, 0, true);
+            int iterationScore = Negamax(-100000, 100000, currentDepth, 0, true);
 
-            if ((TimeControl && _timer.GetDiff() > SideTime / 30) || _stopSearch) break;
+            if ((_timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
             
-            bestMove = _iterationMove;
+            bestMove = IterationMove;
             
             if (iterationScore > 50000) break;
         
             Move.Print(bestMove);
-            Console.WriteLine(" depth {0,2} nodes {1,9:n0} time {2,4:n0}ms", currentDepth, _nodes, _timer.GetDiff());
+            Console.WriteLine(" depth {0,2} score {1,4}, nodes {2,9:n0} time {3,4:n0}ms", currentDepth, IterationScore, _nodes, _timer.GetDiff());
         }
 
         return bestMove;
@@ -163,11 +70,10 @@ internal class Search {
             _board.MakeNullMove();
             int value = -Negamax(-beta, -beta + 1, depth - 3, ply, false);
             _board.TakeBack();
-
+        
             if (value >= beta)
                 return beta;
         }
-        // List<int> moves = _board.GetPseudoLegalMoves();
         
         Span<int> moveSpan = stackalloc int[218];
         _board.GetPseudoLegalMovesNonAlloc(ref moveSpan);
@@ -181,59 +87,66 @@ internal class Search {
             int promotion = Move.GetMovePromotion(moveSpan[i]);
             bool isPromotion = promotion > 0;
             
-            moveScores[i] = moveSpan[i] == entry.Move ? 1000 :
+            moveScores[i] = moveSpan[i] == entry.Move ? 100000 :
                 isCapture ? 100 : isPromotion ? promotion : 0;
+            
+            // moveScores[i] = isCapture ? 100 : isPromotion ? promotion : 0;
         }
 
         for (int i = 0; i < moveSpan.Length; i++) {
-            if ((TimeControl && _timer.GetDiff() > SideTime / 30) || _stopSearch) break;
+            if ((_timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
             
             for (int j = i + 1; j < moveSpan.Length; j++) {
                 if (moveScores[i] < moveScores[j])
                     (moveSpan[i], moveSpan[j], moveScores[i], moveScores[j]) =
                         (moveSpan[j], moveSpan[i], moveScores[j], moveScores[i]);
             }
+
+            int move = moveSpan[i];
             
-            if (!_board.MakeMove(moveSpan[i])) continue;
+            if (!_board.MakeMove(move)) continue;
             int score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
             _board.TakeBack();
             
             if (score > bestScore)
             {
                 bestScore = score;
-                bestMove = moveSpan[i];
+                bestMove = move;
                 
                 alpha = Math.Max(alpha, bestScore);
-                
-                if (isRoot) _iterationMove = moveSpan[i];
+
+                if (isRoot) {
+                    IterationScore = alpha;
+                    IterationMove = move;
+                }
                 if (alpha >= beta) break;
             }
         }
 
-        if (moveSpan.Length == 0) return isInCheck ? -100000 + ply : 0;
+        // if (moveSpan.Length == 0) return isInCheck ? -100000 + ply : 0;
         
         MoveFlag flag = bestScore >= beta ? MoveFlag.Beta :
             bestScore > startAlpha ? MoveFlag.Exact : MoveFlag.Alpha;
-
+        
         TranspositionTable[positionKey % 0x7FFFFF] =
             new TranspositionTableEntry(positionKey, bestScore, depth, flag, bestMove);
 
-        return alpha;
+        return bestScore;
     }
 
     // public static int Quiescence(int alpha, int beta, int limit) {
     //     _nodes++;
-    //     int standPat = Evaluate();
+    //     int standPat = EvaluatePeStO();
     //     if (limit == 0) return standPat;
     //     if (standPat >= beta) return beta;
     //     if (alpha < standPat) alpha = standPat;
     //
-    //     List<int> moves = Board.GetPseudoLegalCaptures();
+    //     List<int> moves = _board.GetPseudoLegalCaptures();
     //
     //     for (int i = 0; i < moves.Count; i++) {
-    //         if (!Board.MakeMove(moves[i])) continue;
+    //         if (!_board.MakeMove(moves[i])) continue;
     //         int score = -Quiescence(-beta, -alpha, limit - 1);
-    //         Board.TakeBack();
+    //         _board.TakeBack();
     //
     //         if (score >= beta) return beta;
     //         if (score > alpha) alpha = score;
@@ -241,25 +154,59 @@ internal class Search {
     //
     //     return alpha;
     // }
+    
+    // private static int GetPstValue(int psq) => (int)(((_pestoTables[psq / 10] >> (6 * (psq % 10))) & 63) - 20) * 8;
+    //
+    //
+    // private static int EvaluatePeStO()
+    // {
+    //     // if (_board.IsInCheckmate())
+    //     //     return _board.IsWhiteToMove ? 10000 - (_board.PlyCount) : -10000 + _board.PlyCount;
+    //     
+    //     int phase = 0, mg = 0, eg = 0;
+    //     
+    //     foreach (bool isWhite in new[] {true, false}) {
+    //         for (var pieceType = 0; pieceType <= 5; pieceType++) {
+    //             ulong pieceBitBoard = _board.Bitboards[pieceType + (isWhite ? 0 : 6)];
+    //
+    //             while (pieceBitBoard != 0)
+    //             {
+    //                 phase += _gamePhase[pieceType];
+    //
+    //                 int lsbIndex = BitboardHelper.GetLSFBIndex(pieceBitBoard);
+    //                 BitboardHelper.PopBitAtIndex(lsbIndex, ref pieceBitBoard);
+    //                 
+    //                 int index = 128 * pieceType + lsbIndex ^ (isWhite ? 56 : 0);
+    //                 mg += GetPstValue(index) + _pieceWeights[pieceType];
+    //                 eg += GetPstValue(index + 64) + _pieceWeights[pieceType];
+    //             }
+    //         }
+    //
+    //         mg = -mg;
+    //         eg = -eg;
+    //     }
+    //
+    //     return (mg * phase + eg * (24 - phase)) / 24 * (_board.SideToMove == SideToMove.White ? 1 : -1);
+    // }
 
     public static int Evaluate() {
         int total = 0;
-
-        for (int isWhite = 0; isWhite < 1; isWhite++) {
-            for (int piece = 1; piece <= 6; piece++) {
-                ulong pieceBitBoard = _board.Bitboards[piece + (isWhite == 0 ? 0 : 6) - 1];
+    
+        for (int isWhite = 0; isWhite <= 1; isWhite++) {
+            for (int piece = 0; piece <= 5; piece++) {
+                ulong pieceBitBoard = _board.Bitboards[piece + (isWhite == 0 ? 0 : 6)];
                 
                 while (pieceBitBoard != 0)
                 {
                     int bitIndex = BitboardHelper.GetLSFBIndex(pieceBitBoard);
                     
                     BitboardHelper.PopBitAtIndex(bitIndex, ref pieceBitBoard);
-
-                    total += (PieceWeights[piece] + PieceSquareTables[piece + (isWhite == 0 ? 0 : 6) - 1, bitIndex]) * (isWhite == 0 ? 1 : -1);
+    
+                    total += PieceWeights[piece] * (isWhite == 0 ? 1 : -1);
                 }
             }
         }
-
+    
         return total * (_board.SideToMove == SideToMove.White ? 1 : -1);
     }
 }

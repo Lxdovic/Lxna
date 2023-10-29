@@ -1,5 +1,5 @@
 namespace Lxna {
-    internal static class UniversalChessInterface {
+    public static class UniversalChessInterface {
         private static Thread? _searchThread;
 
         public static void StartLoop() {
@@ -13,32 +13,36 @@ namespace Lxna {
 
                 if (command == null) continue;
 
-                var instructions = command.Split(" ");
+                HandleCommand(command);
+            }
+        }
 
-                switch (instructions[0]) {
-                    case "uci":
-                        PrintUci();
-                        break;
-                    case "isready":
-                        IsReady();
-                        break;
-                    case "ucinewgame":
-                        ParsePosition("position startpos");
-                        break;
-                    case "go":
-                        ParseGo(instructions.Skip(1).ToArray());
-                        break;
-                    case "stop":
-                        StopSearch();
-                        break;
-                    case "position":
-                        ParsePosition(command);
-                        break;
-                    case "help":
-                        PrintCommands();
-                        break;
-                    case "quit": return;
-                }
+        public static void HandleCommand(String command) {
+            var instructions = command.Split(" ");
+
+            switch (instructions[0]) {
+                case "uci":
+                    PrintUci();
+                    break;
+                case "isready":
+                    IsReady();
+                    break;
+                case "ucinewgame":
+                    ParsePosition("position startpos");
+                    break;
+                case "go":
+                    ParseGo(instructions.Skip(1).ToArray());
+                    break;
+                case "stop":
+                    StopSearch();
+                    break;
+                case "position":
+                    ParsePosition(command);
+                    break;
+                case "help":
+                    PrintCommands();
+                    break;
+                case "quit": return;
             }
         }
 
@@ -79,77 +83,30 @@ namespace Lxna {
             Console.WriteLine("readyok");
         }
 
-        public static void SearchBlackTime(int time) {
-            Search.TimeControl = true;
-            Search.BlackTime = time;
-            int bestMove = Search.Think(Engine.Board);
-
-            Console.WriteLine("bestmove {0}{1}",
-                ((Square)Move.GetMoveSource(bestMove)).ToString().ToLower(),
-                ((Square)Move.GetMoveTarget(bestMove)).ToString().ToLower());
-        }
-        
-        public static void SearchWhiteTime(int time) {
-            Search.TimeControl = true;
-            Search.WhiteTime = time;
-            int bestMove = Search.Think(Engine.Board);
-
-            Console.WriteLine("bestmove {0}{1}",
-                ((Square)Move.GetMoveSource(bestMove)).ToString().ToLower(),
-                ((Square)Move.GetMoveTarget(bestMove)).ToString().ToLower());
-        }
-        
-        public static void SearchInfinite() {
-            Search.TimeControl = false;
-            int bestMove = Search.Think(Engine.Board);
-
-            Console.WriteLine("bestmove {0}{1}",
-                ((Square)Move.GetMoveSource(bestMove)).ToString().ToLower(),
-                ((Square)Move.GetMoveTarget(bestMove)).ToString().ToLower());
-        }
-
-        public static void SearchDepth(int depth) {
-            Search.TimeControl = false;
-            int bestMove = Search.Think(Engine.Board, depth);
-
-            Console.WriteLine("bestmove {0}{1}",
-                ((Square)Move.GetMoveSource(bestMove)).ToString().ToLower(),
-                ((Square)Move.GetMoveTarget(bestMove)).ToString().ToLower());
-        }
-
-        public static void SearchPerft(int depth) {
-            Engine.PerfTest(depth);
-        }
-
         public static void ParseGo(String[] instructions) {
-
             switch (instructions[0]) {
                 case "depth": {
-                    _searchThread = new Thread(() => SearchDepth(int.Parse(instructions[1])));
+                    // time set to 0 because timeControl = false
+                    _searchThread = new Thread(() => Search.Think(Engine.Board, false, 0, int.Parse(instructions[1])));
                     _searchThread.Start();
                     break;
                 }
 
-                case "btime": {
-                    _searchThread = new Thread(() => SearchBlackTime(int.Parse(instructions[1])));
-                    _searchThread.Start();
-                    break;
-                }
-
-                case "wtime": {
-                    _searchThread = new Thread(() => SearchWhiteTime(int.Parse(instructions[1])));
+                case "btime": case "wtime": {
+                    _searchThread = new Thread(() => Search.Think(Engine.Board, true,int.Parse(instructions[1])));
                     _searchThread.Start();
                     break;
                 }
 
                 case "infinite": {
-                    _searchThread = new Thread(SearchInfinite);
+                    _searchThread = new Thread(() => Search.Think(Engine.Board, false));
                     _searchThread.Start();
                     break;
                 }
 
                 case "perft": {
-                    _searchThread = new Thread(() => SearchPerft(int.Parse(instructions[1])));
+                    _searchThread = new Thread(() => Search.Think(Engine.Board, false));
+                    _searchThread = new Thread(() => Perft.PerfTest(int.Parse(instructions[1])));
                     _searchThread.Start();
                     break;
                 }
@@ -186,6 +143,17 @@ namespace Lxna {
             Engine.Board.Print();
         }
 
+        public static int ParseMove(Board board, int source, int target) {
+            List<int> moves = board.GetPseudoLegalMoves();
+
+            foreach (var currentMove in moves) {
+                if (source == Move.GetMoveSource(currentMove) && target == Move.GetMoveTarget(currentMove)) {
+                    return currentMove;
+                }
+            }
+
+            return 0;
+        }
         public static int ParseMove(Board board, String move) {
             List<int> moves = board.GetPseudoLegalMoves();
 

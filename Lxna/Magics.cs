@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Lxna {
-    internal static class Magics {
+    public static class Magics {
         public static readonly ulong[] RookMagicNumbers = {
             0x8A80104000800020,
             0x140002000100040,

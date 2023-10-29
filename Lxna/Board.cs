@@ -2,7 +2,7 @@
 
 namespace Lxna
 {
-    internal class Board {
+    public class Board {
         public ulong[] Bitboards;
         public ulong[] Blockers;
         public Square EnPassant;
@@ -21,6 +21,20 @@ namespace Lxna
             { "r", Piece.BlackRook },
             { "q", Piece.BlackQueen },
             { "k", Piece.BlackKing }
+        };
+        public static readonly Dictionary<Piece, String> PiecesChar = new Dictionary<Piece, String> {
+            { Piece.WhitePawn, "P" },
+            { Piece.WhiteKnight, "N" },
+            { Piece.WhiteBishop, "B" },
+            { Piece.WhiteRook, "R" },
+            { Piece.WhiteQueen, "Q" },
+            { Piece.WhiteKing, "K" },
+            { Piece.BlackPawn, "p" },
+            { Piece.BlackKnight, "n" },
+            { Piece.BlackBishop, "b" },
+            { Piece.BlackRook, "r" },
+            { Piece.BlackQueen, "q" },
+            { Piece.BlackKing, "k" }
         };
         public static readonly String[] UnicodePieces = {
             "\u265f",
@@ -119,6 +133,47 @@ namespace Lxna
             _castlingistory.Add(Castling);
             _bitboardsHistory.Add(Bitboards);
             _blockersHistory.Add(Blockers);
+        }
+        
+        public String GetFen() {
+            String fen = "";
+            
+            int emptySquares = 0;
+            
+            for (int i = 0; i < 64; i++) {
+                bool pieceWasFound = false;
+                
+                for (int piece = 0; piece < 12; piece++) {
+                    if (BitboardHelper.GetBitAtIndex(i, Bitboards[piece]) > 0) {
+                        if (emptySquares > 0) fen = fen.Insert(fen.Length, emptySquares.ToString());
+                        emptySquares = 0;
+                        fen = fen.Insert(fen.Length, PiecesChar[(Piece)piece]);
+                        pieceWasFound = true;
+                    }
+                }
+
+                if (!pieceWasFound) emptySquares++;
+
+                if ((i + 1) % 8 == 0) {
+                    if (emptySquares > 0) fen = fen.Insert(fen.Length, emptySquares.ToString());
+                    emptySquares = 0;
+                    
+                    if (i < 63) fen = fen.Insert(fen.Length, "/");
+                }
+            }
+
+            fen = fen.Insert(fen.Length, SideToMove == SideToMove.White ? " w " : " b ");
+            fen = fen.Insert(fen.Length, (Castling & (int)Castle.WhiteKingside) > 0 ? "K" : "-");
+            fen = fen.Insert(fen.Length, (Castling & (int)Castle.WhiteQueenside) > 0 ? "Q" : "-");
+            fen = fen.Insert(fen.Length, (Castling & (int)Castle.BlackKingside) > 0 ? "k" : "-");
+            fen = fen.Insert(fen.Length, (Castling & (int)Castle.BlackQueenside) > 0 ? "q" : "-");
+            
+            if (EnPassant == Square.NoSquare) fen = fen.Insert(fen.Length, " - ");
+            else {
+                fen = fen.Insert(fen.Length, $" {EnPassant.ToString().ToLower()} ");
+            }
+
+            return fen;
         }
         
         public void ParseFen(String fen) {
@@ -247,9 +302,14 @@ namespace Lxna
         public bool MakeMove(int move) {
             Copy();
 
+            int piece = Move.GetMovePiece(move);
+
+            if ((SideToMove == SideToMove.White && piece > 5) || (SideToMove == SideToMove.Black && piece < 6)) {
+                return false;
+            }
+            
             int source = Move.GetMoveSource(move);
             int target = Move.GetMoveTarget(move);
-            int piece = Move.GetMovePiece(move);
             int promoted = Move.GetMovePromotion(move);
             int capture = Move.GetMoveCapture(move);
             int doublePush = Move.GetMoveDoublePush(move);
