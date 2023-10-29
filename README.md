@@ -1,5 +1,7 @@
 # Lxna Engine
 
+Bitboard chess engine with zero dependencies written in C#
+
 ## Authors
 
 - [@Lxdovic](https://www.github.com/Lxdovic)
