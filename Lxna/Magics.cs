@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Lxna {
-    internal class Magics {
+    public static class Magics {
         public static readonly ulong[] RookMagicNumbers = {
             0x8A80104000800020,
             0x140002000100040,
@@ -136,7 +136,7 @@ namespace Lxna {
         };
         
         // Pseudo RNG state
-        public static uint RNGState = 1804289383;
+        public static uint RngState = 1804289383;
 
         public enum BishopRookFlag {
             Rook, Bishop
@@ -220,13 +220,13 @@ namespace Lxna {
         }
 
         public static uint GetRandomNumberU32() {
-            uint number = RNGState;
+            uint number = RngState;
 
             number ^= number << 13;
             number ^= number >> 17;
             number ^= number << 5;
 
-            RNGState = number;
+            RngState = number;
 
             return number;
         }

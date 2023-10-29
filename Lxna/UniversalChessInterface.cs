@@ -1,48 +1,115 @@
-
 namespace Lxna {
-    internal class UniversalChessInterface {
-        public static bool TimeControl = true;
-        public static int AllowedTime = 1000;
+    public static class UniversalChessInterface {
+        private static Thread? _searchThread;
+
         public static void StartLoop() {
-            Console.WriteLine("Lxna engine by Lxdovic (https://github.com/Lxdovic)");
-            Console.WriteLine("UCI Protocol documentation available -> https://gist.github.com/Lxdovic/20f3d65d8c3459bb20ea3ce8d595ec4b\n");
+            Console.WriteLine("_________________________________________________________________\n");
+            Console.WriteLine("       Lxna engine by Lxdovic (https://github.com/Lxdovic)       ");
+            Console.WriteLine("_________________________________________________________________\n");
+            Console.WriteLine("> help for command list");
 
             while (true) {
                 var command = Console.ReadLine();
 
                 if (command == null) continue;
-                
-                var instructions = command.Split(" ");
 
-                switch (instructions[0]) {
-                    case "isready": IsReady(); break;
-                    case "ucinewgame": ParsePosition("position startpos"); break;
-                    case "go": ParseGo(command); break;
-                    case "position": ParsePosition(command); break;
-                    case "uci": PrintUCI(); break;
-                    case "quit": return;
-                }
-            };
+                HandleCommand(command);
+            }
         }
 
-        public static void PrintUCI() {
+        public static void HandleCommand(String command) {
+            var instructions = command.Split(" ");
+
+            switch (instructions[0]) {
+                case "uci":
+                    PrintUci();
+                    break;
+                case "isready":
+                    IsReady();
+                    break;
+                case "ucinewgame":
+                    ParsePosition("position startpos");
+                    break;
+                case "go":
+                    ParseGo(instructions.Skip(1).ToArray());
+                    break;
+                case "stop":
+                    StopSearch();
+                    break;
+                case "position":
+                    ParsePosition(command);
+                    break;
+                case "help":
+                    PrintCommands();
+                    break;
+                case "quit": return;
+            }
+        }
+
+        private static void PrintCommands() {
+            Console.WriteLine("_________________________________________________________________\n");
+            Console.WriteLine("                         Lxna UCI Commands                       ");
+            Console.WriteLine("_________________________________________________________________\n");
+            Console.WriteLine("* uci                     print engine information");
+            Console.WriteLine("* isready                 is the engine ready");
+            Console.WriteLine("* ucinewgame              start a new game");
+            Console.WriteLine("* position [fen <fenstring> | startpos] moves <move1> ... <movei>");
+            Console.WriteLine("                          setup the position described nad play the moves on");
+            Console.WriteLine("                          the internal chess board.");
+            Console.WriteLine("* go                      start searching on the current position set up with");
+            Console.WriteLine("                          the 'position' command");
+            Console.WriteLine("    * depth <x>");
+            Console.WriteLine("                          search x plies");
+            Console.WriteLine("    * infinite");
+            Console.WriteLine("                          search until the 'stop' command is executed.");
+            Console.WriteLine("    * perft <x>");
+            Console.WriteLine("                          executes a performance test x plies");
+            Console.WriteLine("* stop                    stop calculating as soon as possible");
+            Console.WriteLine("* quit                    exit the program");
+        }
+
+        public static void StopSearch() {
+            Search.Stop();
+            if (_searchThread != null) _searchThread.Interrupt();
+        }
+
+        public static void PrintUci() {
             Console.WriteLine("id name Lxna");
             Console.WriteLine("id author Lxdovic");
             Console.WriteLine("uciok");
         }
 
-        public static void IsReady() { Console.WriteLine("readyok"); }
-        public static void ParseGo(String command) {
-            var depthString = command.Split("depth ");
-            var perftString = command.Split("perft ");
+        public static void IsReady() {
+            Console.WriteLine("readyok");
+        }
 
-            if (depthString.Length > 1) {
-                Engine.board.Print();
-                TimeControl = false;
-                Search.Think(Engine.board, int.Parse(depthString[1]));
-            }
-            else if (perftString.Length > 1) {
-                Engine.PerfTest(int.Parse(perftString[1]));
+        public static void ParseGo(String[] instructions) {
+            switch (instructions[0]) {
+                case "depth": {
+                    // time set to 0 because timeControl = false
+                    _searchThread = new Thread(() => Search.Think(Engine.Board, false, 0, int.Parse(instructions[1])));
+                    _searchThread.Start();
+                    break;
+                }
+
+                case "btime": case "wtime": {
+                    _searchThread = new Thread(() => Search.Think(Engine.Board, true,int.Parse(instructions[1])));
+                    _searchThread.Start();
+                    break;
+                }
+
+                case "infinite": {
+                    _searchThread = new Thread(() => Search.Think(Engine.Board, false));
+                    _searchThread.Start();
+                    break;
+                }
+
+                case "perft": {
+                    _searchThread = new Thread(() => Search.Think(Engine.Board, false));
+                    _searchThread = new Thread(() => Perft.PerfTest(int.Parse(instructions[1])));
+                    _searchThread.Start();
+                    break;
+                }
             }
         }
 
@@ -50,31 +117,42 @@ namespace Lxna {
             var instructions = command.Split(" ");
             var movesString = command.Split("moves ");
             var fenString = movesString[0].Split("fen ");
-            
+
             if (instructions[1].Equals("startpos")) {
-                Engine.board = new Board(Engine.START_POS);
+                Engine.Board = new Board(Engine.StartPos);
             }
-            
+
             if (fenString.Length > 1) {
-                Engine.board = new Board(fenString[1]);
+                Engine.Board = new Board(fenString[1]);
             }
-            
+
             if (movesString.Length > 1) {
                 String[] moves = movesString[1].Split(" ");
 
                 foreach (var moveString in moves) {
                     Console.WriteLine(moveString);
 
-                    int move = ParseMove(Engine.board, moveString);
-                    
+                    int move = ParseMove(Engine.Board, moveString);
+
                     if (move == 0) continue;
-                    
-                    Engine.board.MakeMove(move);
+
+                    Engine.Board.MakeMove(move);
                 }
             }
-            
-            Engine.board.Print();
-          
+
+            Engine.Board.Print();
+        }
+
+        public static int ParseMove(Board board, int source, int target) {
+            List<int> moves = board.GetPseudoLegalMoves();
+
+            foreach (var currentMove in moves) {
+                if (source == Move.GetMoveSource(currentMove) && target == Move.GetMoveTarget(currentMove)) {
+                    return currentMove;
+                }
+            }
+
+            return 0;
         }
         public static int ParseMove(Board board, String move) {
             List<int> moves = board.GetPseudoLegalMoves();
@@ -116,5 +194,5 @@ namespace Lxna {
 
             return 0;
         }
-    }
+    };
 }
