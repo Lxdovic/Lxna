@@ -20,11 +20,11 @@ Bitboard chess engine with zero dependencies written in C#
 
 ### Show commands
 
-```help```
+`help`
 
 ### Display engine informations
 
-```uci```
+`uci`
 
 <p>output</p>
 
@@ -33,8 +33,10 @@ id name Lxna
 id author Lxdovic
 uciok
 ```
+
 ### Check if the engine is ready
-```isready```
+
+`isready`
 
 <p>output</p>
 
@@ -43,43 +45,48 @@ readyok
 ```
 
 ### Start a new game and setup start position
-```ucinewgame```
+
+`ucinewgame`
 
 <p>output</p>
 
 ```
- 8  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜ 
- 7  ♟  ♟  ♟  ♟  ♟  ♟  ♟  ♟ 
- 6                         
- 5                         
- 4                         
- 3                         
- 2  ♟  ♟  ♟  ♟  ♟  ♟  ♟  ♟ 
- 1  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜ 
+ 8  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜
+ 7  ♟  ♟  ♟  ♟  ♟  ♟  ♟  ♟
+ 6
+ 5
+ 4
+ 3
+ 2  ♟  ♟  ♟  ♟  ♟  ♟  ♟  ♟
+ 1  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜
     a  b  c  d  e  f  g  h
 
 SideToMove:           White
 EnPassant:         NoSquare
 Castling:              KQkq
 ```
+
 ### Set a position
 
-```position \[fen <fenstring> | startpos] moves \<move1> ... \<movei></b```
+`position \[fen <fenstring> | startpos] moves \<move1> ... \<movei></b`
 
 example input
+
 ```
 position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - moves e2a6 b4c3
 ```
+
 example output
+
 ```
- 8  ♜           ♚        ♜ 
- 7  ♟     ♟  ♟  ♛  ♟  ♝    
- 6  ♝  ♞        ♟  ♞  ♟    
- 5           ♟  ♞          
- 4              ♟          
- 3        ♟        ♛     ♟ 
- 2  ♟  ♟  ♟  ♝     ♟  ♟  ♟ 
- 1  ♜           ♚        ♜ 
+ 8  ♜           ♚        ♜
+ 7  ♟     ♟  ♟  ♛  ♟  ♝
+ 6  ♝  ♞        ♟  ♞  ♟
+ 5           ♟  ♞
+ 4              ♟
+ 3        ♟        ♛     ♟
+ 2  ♟  ♟  ♟  ♝     ♟  ♟  ♟
+ 1  ♜           ♚        ♜
     a  b  c  d  e  f  g  h
 
 SideToMove:           White
@@ -89,12 +96,14 @@ Castling:              KQkq
 
 ### Start searching
 
-```position \[fen <fenstring> | startpos] moves \<move1> ... \<movei>```
+`position \[fen <fenstring> | startpos] moves \<move1> ... \<movei>`
 
 example input
+
 ```
 go
 ```
+
 - Search x plies
   ```
   depth <x>
@@ -115,11 +124,14 @@ go
   ```
   perft <x>
   ```
-example input
+  example input
+
 ```
 go depth 8
 ```
+
 example output
+
 ```
 move F3F6 depth  1 score  330, nodes        52 time   77ms
 move B2C3 depth  2 score   20, nodes       120 time   77ms
@@ -131,11 +143,15 @@ move D2C3 depth  7 score  190, nodes   751,752 time  342ms
 move D2C3 depth  8 score -210, nodes   469,464 time  613ms
 bestmove d2c3
 ```
+
 example input
+
 ```
 go perft 5
 ```
+
 example output
+
 ```
 move A2A3  nodes 181,046  KN/s 7,872 time:    23
 move A2A4  nodes 217,832  KN/s 9,729 time:    41
@@ -160,10 +176,11 @@ move G1H3  nodes 198,502  KN/s 12,605 time:   386
 
 perft depth 5 nodes 4,865,609 time  386
 ```
+
 ### Stop searching
 
-```stop```
+`stop`
 
 ### Exit program
 
-```quit```
+`quit`
