@@ -26,8 +26,8 @@ public class Search {
         _timeControl = timeControl;
         
         Array.Clear(TranspositionTable, 0, TranspositionTable.Length);
-        
-        int currentDepth, bestMove = 0;
+
+        int currentDepth, bestMove = _board.GetPseudoLegalMoves()[0];
 
         for (currentDepth = 1; currentDepth <= depth; currentDepth++) {
             _nodes = 0;

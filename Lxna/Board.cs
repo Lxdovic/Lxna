@@ -128,11 +128,13 @@ namespace Lxna
             
             ParseFen(fen);
             
-            _enPassantHistory.Add(EnPassant);
-            _sideToMoveHistory.Add(SideToMove);
-            _castlingistory.Add(Castling);
-            _bitboardsHistory.Add(Bitboards);
-            _blockersHistory.Add(Blockers);
+            // _enPassantHistory.Add(EnPassant);
+            // _sideToMoveHistory.Add(SideToMove);
+            // _castlingistory.Add(Castling);
+            // _bitboardsHistory.Add(Bitboards);
+            // _blockersHistory.Add(Blockers);
+
+            Copy();
         }
         
         public String GetFen() {
@@ -241,12 +243,12 @@ namespace Lxna
         
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public void Copy() {
-            ulong[] bitboardsCopyArray = new ulong[12];
-            ulong[] blockersCopyArray = new ulong[3];
-            
             _enPassantHistory.Add(EnPassant);
             _sideToMoveHistory.Add(SideToMove);
             _castlingistory.Add(Castling);
+            
+            ulong[] bitboardsCopyArray = new ulong[12];
+            ulong[] blockersCopyArray = new ulong[3];
             
             Array.Copy(Bitboards, bitboardsCopyArray, Bitboards.Length);
             Array.Copy(Blockers, blockersCopyArray, Blockers.Length);
@@ -257,6 +259,8 @@ namespace Lxna
         
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public void TakeBack() {
+            if (_enPassantHistory.Count <= 0) return;
+            
             // using _enPassantHistory or any other history here doesn't matter, they are all synced
             int count = _enPassantHistory.Count - 1;
             
