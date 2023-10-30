@@ -96,10 +96,6 @@ Castling:              KQkq
 
 ### Start searching
 
-`position \[fen <fenstring> | startpos] moves \<move1> ... \<movei>`
-
-example input
-
 ```
 go
 ```
