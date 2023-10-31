@@ -259,22 +259,17 @@ namespace Lxna
         
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public void TakeBack() {
-            if (_enPassantHistory.Count <= 0) return;
+            EnPassant = _enPassantHistory[ _enPassantHistory.Count - 1];
+            SideToMove = _sideToMoveHistory[ _sideToMoveHistory.Count - 1];
+            Castling = _castlingistory[ _castlingistory.Count - 1];
+            Bitboards = _bitboardsHistory[ _bitboardsHistory.Count - 1];
+            Blockers = _blockersHistory[ _blockersHistory.Count - 1];
             
-            // using _enPassantHistory or any other history here doesn't matter, they are all synced
-            int count = _enPassantHistory.Count - 1;
-            
-            EnPassant = _enPassantHistory[count];
-            SideToMove = _sideToMoveHistory[count];
-            Castling = _castlingistory[count];
-            Bitboards = _bitboardsHistory[count];
-            Blockers = _blockersHistory[count];
-            
-            _enPassantHistory.RemoveAt(count);
-            _sideToMoveHistory.RemoveAt(count);
-            _castlingistory.RemoveAt(count);
-            _bitboardsHistory.RemoveAt(count);
-            _blockersHistory.RemoveAt(count);
+            _enPassantHistory.RemoveAt( _enPassantHistory.Count - 1);
+            _sideToMoveHistory.RemoveAt( _sideToMoveHistory.Count - 1);
+            _castlingistory.RemoveAt( _castlingistory.Count - 1);
+            _bitboardsHistory.RemoveAt( _bitboardsHistory.Count - 1);
+            _blockersHistory.RemoveAt( _blockersHistory.Count - 1);
         }
 
         public void PrintAttacks(SideToMove side) {

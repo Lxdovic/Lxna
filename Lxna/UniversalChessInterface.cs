@@ -1,14 +1,19 @@
 namespace Lxna {
     public static class UniversalChessInterface {
         private static Thread? _searchThread;
+        private static bool _shouldQuit;
 
         public static void StartLoop() {
+            // let JIT run for a bit
+            // https://stackoverflow.com/a/28950600
+            Search.Think(Engine.Board, false, 0, 8, false);
+            
             Console.WriteLine("_________________________________________________________________\n");
             Console.WriteLine("       Lxna engine by Lxdovic (https://github.com/Lxdovic)       ");
             Console.WriteLine("_________________________________________________________________\n");
             Console.WriteLine("> help for command list");
 
-            while (true) {
+            while (!_shouldQuit) {
                 var command = Console.ReadLine();
 
                 if (command == null) continue;
@@ -42,7 +47,9 @@ namespace Lxna {
                 case "help":
                     PrintCommands();
                     break;
-                case "quit": return;
+                case "quit":
+                    _shouldQuit = true;
+                    return;
             }
         }
 
