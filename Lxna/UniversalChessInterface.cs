@@ -6,7 +6,7 @@ namespace Lxna {
         public static void StartLoop() {
             // let JIT run for a bit
             // https://stackoverflow.com/a/28950600
-            Search.Think(Engine.Board, false, 0, 8, false);
+            Search.Think(Engine.Board, false, 0, 5, false);
             
             Console.WriteLine("_________________________________________________________________\n");
             Console.WriteLine("       Lxna engine by Lxdovic (https://github.com/Lxdovic)       ");
