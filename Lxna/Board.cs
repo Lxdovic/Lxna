@@ -63,6 +63,7 @@ namespace Lxna
         private List<int> _castlingistory = new();
         private List<ulong[]> _bitboardsHistory = new();        
         private List<ulong[]> _blockersHistory = new();
+        public List<ulong> _boardHistory = new();
 
         public ulong GetZobrist() {
             ulong finalKey = 0x0UL;
@@ -128,12 +129,6 @@ namespace Lxna
             
             ParseFen(fen);
             
-            // _enPassantHistory.Add(EnPassant);
-            // _sideToMoveHistory.Add(SideToMove);
-            // _castlingistory.Add(Castling);
-            // _bitboardsHistory.Add(Bitboards);
-            // _blockersHistory.Add(Blockers);
-
             Copy();
         }
         
@@ -246,6 +241,7 @@ namespace Lxna
             _enPassantHistory.Add(EnPassant);
             _sideToMoveHistory.Add(SideToMove);
             _castlingistory.Add(Castling);
+            _boardHistory.Add(GetZobrist());
             
             ulong[] bitboardsCopyArray = new ulong[12];
             ulong[] blockersCopyArray = new ulong[3];
@@ -270,6 +266,7 @@ namespace Lxna
             _castlingistory.RemoveAt( _castlingistory.Count - 1);
             _bitboardsHistory.RemoveAt( _bitboardsHistory.Count - 1);
             _blockersHistory.RemoveAt( _blockersHistory.Count - 1);
+            _boardHistory.RemoveAt(_boardHistory.Count - 1);
         }
 
         public void PrintAttacks(SideToMove side) {
@@ -414,6 +411,8 @@ namespace Lxna
 
                 return false;
             }
+            
+            _boardHistory.Add(GetZobrist());
             
             return true;
         }

@@ -1,7 +1,7 @@
 namespace Lxna; 
 
 public class Perft {
-    private static long _nodes;
+    private static ulong _nodes;
     
     public static void PerfTest(int depth) {
         _nodes = 0;
@@ -14,13 +14,13 @@ public class Perft {
         foreach (int move in moveSpan) {
             if (!Engine.Board.MakeMove(move)) continue;
             
-            long oldNodes = _nodes;
+            ulong oldNodes = _nodes;
                 
             PerfDriver(depth - 1);
                 
             Engine.Board.TakeBack();
 
-            long cumulativeNodes = _nodes - oldNodes;
+            ulong cumulativeNodes = _nodes - oldNodes;
                 
             double timeSeconds = timer.GetDiff() / 1000.0;
             double nps = _nodes / timeSeconds;
