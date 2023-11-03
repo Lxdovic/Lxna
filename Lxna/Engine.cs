@@ -101,7 +101,6 @@
 
         public static void Main(string[] args) {
             Movegen.Init();
-            Search.InitializeEvalMasks();
             UniversalChessInterface.StartLoop(args.Contains("--fastinit"));
         }
     }

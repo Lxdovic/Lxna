@@ -48,7 +48,7 @@ namespace Lxna {
             Square source = (Square)GetMoveSource(move);
             Square target = (Square)GetMoveTarget(move);
             
-            Console.Write("move {0}{1}", source, target);
+            Console.Write("{0}{1}", source.ToString().ToLower(), target.ToString().ToLower());
         }
         
         public static void PrintVerbose(int move) {

@@ -63,7 +63,7 @@ namespace Lxna
         private List<int> _castlingistory = new();
         private List<ulong[]> _bitboardsHistory = new();        
         private List<ulong[]> _blockersHistory = new();
-        public List<ulong> _boardHistory = new();
+        // public List<ulong> _boardHistory = new();
 
         public ulong GetZobrist() {
             ulong finalKey = 0x0UL;
@@ -241,7 +241,6 @@ namespace Lxna
             _enPassantHistory.Add(EnPassant);
             _sideToMoveHistory.Add(SideToMove);
             _castlingistory.Add(Castling);
-            _boardHistory.Add(GetZobrist());
             
             ulong[] bitboardsCopyArray = new ulong[12];
             ulong[] blockersCopyArray = new ulong[3];
@@ -266,7 +265,8 @@ namespace Lxna
             _castlingistory.RemoveAt( _castlingistory.Count - 1);
             _bitboardsHistory.RemoveAt( _bitboardsHistory.Count - 1);
             _blockersHistory.RemoveAt( _blockersHistory.Count - 1);
-            _boardHistory.RemoveAt(_boardHistory.Count - 1);
+            
+            // if (_boardHistory.Count > 0) _boardHistory.RemoveAt(_boardHistory.Count - 1);
         }
 
         public void PrintAttacks(SideToMove side) {
@@ -297,10 +297,13 @@ namespace Lxna
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MakeMove(int move) {
             Copy();
+            
+            // _boardHistory.Add(GetZobrist());
 
             int piece = Move.GetMovePiece(move);
 
             if ((SideToMove == SideToMove.White && piece > 5) || (SideToMove == SideToMove.Black && piece < 6)) {
+                // _boardHistory.RemoveAt(_boardHistory.Count - 1);
                 return false;
             }
             
@@ -407,12 +410,11 @@ namespace Lxna
             if (IsSquareAttacked(
                 (Square)BitboardHelper.GetLSFBIndex(Bitboards[11 - (int)SideToMove * 6]),
                 SideToMove)) {
+                // _boardHistory.RemoveAt(_boardHistory.Count - 1);
                 TakeBack();
 
                 return false;
             }
-            
-            _boardHistory.Add(GetZobrist());
             
             return true;
         }

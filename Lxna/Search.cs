@@ -1,8 +1,6 @@
 namespace Lxna; 
 
 public class Search {
-    public static int IterationMove;
-    public static int IterationScore;
     private static Board _board = new(Engine.StartPos);
     private static Timer _timer = new();
     private static ulong _nodes; 
@@ -133,27 +131,9 @@ public class Search {
         }, 
     };
     private static readonly ulong TranspositionTableSize = 0x7FFFFF;
-    private static readonly int[] GetRank = {
-        7, 7, 7, 7, 7, 7, 7, 7,
-        6, 6, 6, 6, 6, 6, 6, 6,
-        5, 5, 5, 5, 5, 5, 5, 5,
-        4, 4, 4, 4, 4, 4, 4, 4,
-        3, 3, 3, 3, 3, 3, 3, 3,
-        2, 2, 2, 2, 2, 2, 2, 2,
-        1, 1, 1, 1, 1, 1, 1, 1,
-        0, 0, 0, 0, 0, 0, 0, 0
-    };
-    private static readonly int DoubledPawnPenalty = -5;
-    private static readonly int IsolatedPawnPenalty = -10;
-    private static readonly int[] PassedPawnBonus = { 0, 5, 10, 20, 35, 60, 100, 200 };
     private static readonly int[] GamePhases = { 0, 1, 1, 2, 4, 0 };
-    private static readonly int SemiOpenFileScore = 10;
-    private static readonly int OpenFileScore = 20;
-    private static ulong[] FileMasks = new ulong[64];
-    private static ulong[] RankMasks = new ulong[64];
-    private static ulong[] IsolatedPawnMasks = new ulong[64];
-    private static ulong[] WhitePassedMasks = new ulong[64];
-    private static ulong[] BlackPassedMasks = new ulong[64];
+    public static int[] PvLength = new int[64]; 
+    public static int[,] PvTable = new int[64, 64];
 
     public enum MoveFlag { Alpha, Exact, Beta }
     public record struct TranspositionTableEntry(ulong Key, int Score, int Depth, MoveFlag Flag, int Move);
@@ -161,57 +141,7 @@ public class Search {
     private static bool _timeControl = true;
     private static bool _stopSearch;
     private static int _time;
-
-    public static ulong SetFileRankMasks(int file, int rank) {
-        ulong mask = 0x0UL;
-
-        for (int currentRank = 0; currentRank < 8; currentRank++) {
-            for (int currentFile = 0; currentFile < 8; currentFile++) {
-                int square = currentRank * 8 + currentFile;
-
-                if (file >= 0 && file == currentFile) BitboardHelper.SetBitAtIndex(square, ref mask);
-                
-                else if (rank >= 0 && rank == currentRank) {
-                    BitboardHelper.SetBitAtIndex(square, ref mask);
-                }
-            }
-        }
-
-        return mask;
-    }
-
-    public static void InitializeEvalMasks() {
-        for (int currentRank = 0; currentRank < 8; currentRank++) {
-            for (int currentFile = 0; currentFile < 8; currentFile++) {
-                int square = currentRank * 8 + currentFile;
-
-                FileMasks[square] |= SetFileRankMasks(currentFile, -1);
-                RankMasks[square] |= SetFileRankMasks(-1, currentRank);
-                IsolatedPawnMasks[square] |= SetFileRankMasks(currentFile - 1, -1);
-                IsolatedPawnMasks[square] |= SetFileRankMasks(currentFile + 1, -1);
-            }
-        }
-
-        for (int currentRank = 0; currentRank < 8; currentRank++) {
-            for (int currentFile = 0; currentFile < 8; currentFile++) {
-                int square = currentRank * 8 + currentFile;
-                
-                WhitePassedMasks[square] |= SetFileRankMasks(currentFile - 1, -1);
-                WhitePassedMasks[square] |= SetFileRankMasks(currentFile, -1);
-                WhitePassedMasks[square] |= SetFileRankMasks(currentFile + 1, -1);
-                BlackPassedMasks[square] |= SetFileRankMasks(currentFile - 1, -1);
-                BlackPassedMasks[square] |= SetFileRankMasks(currentFile, -1);
-                BlackPassedMasks[square] |= SetFileRankMasks(currentFile + 1, -1);
-
-                for (int i = 0; i < 8 - currentRank; i++) 
-                    WhitePassedMasks[square] &= ~RankMasks[(7 - i) * 8 + currentFile];
-
-                for (int i = 0; i < currentRank + 1; i++) 
-                    BlackPassedMasks[square] &= ~RankMasks[i * 8 + currentFile];
-            }
-        }
-    }
-
+    
     public static int Think(Board board, bool timeControl, int time = 1000, int depth = 100, bool shouldPrint = true) {
         _timer = new Timer();
         _stopSearch = false;
@@ -228,14 +158,21 @@ public class Search {
 
             if ((_timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
             
-            bestMove = IterationMove;
+            bestMove = PvTable[0,0];
+
+            if (shouldPrint) {
+                Console.Write("depth {0,2} score {1,4}, nodes {2,9:n0} time {3,4:n0}ms pv ", currentDepth,
+                    iterationScore, _nodes, _timer.GetDiff());
+
+                for (int i = 0; i < PvLength[0]; i++) {
+                    Move.Print(PvTable[0, i]);
+                    Console.Write(" ");
+                }
+                
+                Console.Write("\n");
+            }
             
             if (iterationScore > 50000) break;
-        
-            if (shouldPrint) {
-                Move.Print(bestMove);
-                Console.WriteLine(" depth {0,2} score {1,4}, nodes {2,9:n0} time {3,4:n0}ms", currentDepth, IterationScore, _nodes, _timer.GetDiff());
-            }
         }
 
         if (shouldPrint) Console.WriteLine("bestmove {0}{1}{2}",
@@ -244,12 +181,18 @@ public class Search {
             Move.GetMovePromotion(bestMove) > 0 ? Board.PiecesChar[(Piece)Move.GetMovePromotion(bestMove)].ToLower() : "");
         
         Array.Clear(TranspositionTable, 0, TranspositionTable.Length);
+        Array.Clear(PvTable, 0, PvTable.Length);
+        Array.Clear(PvLength, 0, PvLength.Length);
         
         return bestMove;
     }
 
     public static int Negamax(int alpha, int beta, int depth, int ply, bool nullCheck) {
+        PvLength[ply] = ply;
+        
         bool isRoot = ply == 0;
+        
+        // if (!isRoot && _board._boardHistory.Contains(positionKey)) return 0;
         
         if (depth == 0) {
             _nodes++;
@@ -279,6 +222,7 @@ public class Search {
         
         Span<int> moveSpan = stackalloc int[218];
         _board.GetPseudoLegalMovesNonAlloc(ref moveSpan);
+        bool foundPv = false;
         int bestMove = 0;
         int bestScore = -100000;
         int startAlpha = alpha;
@@ -291,8 +235,8 @@ public class Search {
             int promotion = Move.GetMovePromotion(moveSpan[i]);
             
             moveScores[i] = moveSpan[i] == entry.Move 
-                ? 100000 
-                : capture > 0 ? 100  * capture - piece 
+                ? 900 
+                : capture > 0 ? 100 * (capture - piece)
                 : promotion > 0 ? promotion * 100 : 0;
         }
 
@@ -309,7 +253,16 @@ public class Search {
             
             if (!_board.MakeMove(move)) continue;
             legalMoves++;
-            int score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
+            int score;
+            
+            if (foundPv) {
+                score = -Negamax(-alpha - 1, -alpha, depth - 1, ply + 1, true);
+                
+                if (score > alpha && score < beta) score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
+            }
+            
+            else score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
+            
             _board.TakeBack();
             
             if (score > bestScore)
@@ -317,12 +270,19 @@ public class Search {
                 bestScore = score;
                 bestMove = move;
                 
-                alpha = Math.Max(alpha, bestScore);
+                if (bestScore > alpha) {
+                    alpha = bestScore;
+                    foundPv = true;
 
-                if (isRoot) {
-                    IterationScore = alpha;
-                    IterationMove = move;
+                    PvTable[ply, ply] = move;
+
+                    for (int nextPly = ply + 1; nextPly < PvLength[ply + 1]; nextPly++) {
+                        PvTable[ply, nextPly] = PvTable[ply + 1, nextPly];
+                    }
+
+                    PvLength[ply] = PvLength[ply + 1];
                 }
+                
                 if (alpha >= beta) break;
             }
         }
@@ -376,130 +336,31 @@ public class Search {
                 endGame += (EndGamePieceWeights[pIndex] + EndGamePieceSquareTables[pIndex, index]) * side;
                 phase += GamePhases[pIndex];
 
+                if (piece == (int)Piece.WhiteQueen || piece == (int)Piece.BlackQueen) {
+                    int mobility = BitboardHelper.CountBits(Movegen.GetQueenAttacks((Square)index, _board.Blockers[2]));
+                    middleGame += mobility * side;
+                    endGame += mobility * side;
+                }
+
+                if (piece == (int)Piece.WhiteBishop || piece == (int)Piece.BlackBishop) {
+                    int mobility = BitboardHelper.CountBits(Movegen.GetBishopAttacks((Square)index, _board.Blockers[2]));
+                    middleGame += mobility * side;
+                    endGame += mobility * side;
+                }
+
+                if (piece == (int)Piece.WhiteRook || piece == (int)Piece.BlackRook) {
+                    int mobility = BitboardHelper.CountBits(Movegen.GetRookAttacks((Square)index, _board.Blockers[2]));
+                    middleGame += mobility * side;
+                    endGame += mobility * side;
+                }
+
                 BitboardHelper.PopBitAtIndex(square, ref bitboard);
             }
         }
         
         return (middleGame * phase + endGame * (24 - phase)) / 24 * (_board.SideToMove == SideToMove.White ? 1 : -1);
     }
-    
-    // public static int Evaluate() {
-    //     int phase = 0;
-    //     int middlegame = 0;
-    //     int endgame = 0;
-    //     
-    //     for (Piece piece = Piece.WhitePawn; piece <= Piece.BlackKing; piece++) {
-    //         ulong bitboard = _board.Bitboards[(int)piece];
-    //         bool isWhite = piece < Piece.BlackPawn;
-    //         int side = isWhite ? 1 : -1;
-    //
-    //         while (bitboard > 0) {
-    //             int index = BitboardHelper.GetLSFBIndex(bitboard);
-    //
-    //             if (piece == Piece.WhitePawn || piece == Piece.BlackPawn) {
-    //                 int doubledPawns = BitboardHelper.CountBits(_board.Bitboards[(int)piece] & FileMasks[index]);
-    //                 
-    //                 int penalty = (doubledPawns - 1) * DoubledPawnPenalty;
-    //                 
-    //                 middlegame += penalty * side;
-    //                 endgame += penalty * side;
-    //                 
-    //                 if ((_board.Bitboards[(int)piece] & IsolatedPawnMasks[index]) == 0) {
-    //                     middlegame += IsolatedPawnPenalty;
-    //                     endgame += IsolatedPawnPenalty;
-    //                 }
-    //                 
-    //                 if ((WhitePassedMasks[index] & _board.Bitboards[isWhite ? (int)Piece.BlackPawn : (int)Piece.WhitePawn]) == 0) {
-    //                     middlegame += PassedPawnBonus[GetRank[index]];
-    //                     endgame += PassedPawnBonus[GetRank[index]];
-    //                 }
-    //             }
-    //             
-    //             if (piece == Piece.WhiteRook) {
-    //                 if ((_board.Bitboards[(int)Piece.WhitePawn] & FileMasks[index]) == 0) {
-    //                     middlegame += SemiOpenFileScore;
-    //                     endgame += SemiOpenFileScore;
-    //                 }
-    //                 
-    //                 if (((_board.Bitboards[(int)Piece.WhitePawn] | _board.Bitboards[(int)Piece.BlackPawn]) & FileMasks[index]) == 0) {
-    //                     middlegame += OpenFileScore;
-    //                     endgame += OpenFileScore;
-    //                 }
-    //             }
-    //             
-    //             if (piece == Piece.BlackRook) {
-    //                 if ((_board.Bitboards[(int)Piece.BlackPawn] & FileMasks[index]) == 0) {
-    //                     middlegame -= SemiOpenFileScore;
-    //                     endgame -= SemiOpenFileScore;
-    //                 }
-    //                 
-    //                 if (((_board.Bitboards[(int)Piece.BlackPawn] | _board.Bitboards[(int)Piece.WhitePawn]) & FileMasks[index]) == 0) {
-    //                     middlegame -= OpenFileScore;
-    //                     endgame -= OpenFileScore;
-    //                 }
-    //             }
-    //             
-    //             if (piece == Piece.WhiteKing) {
-    //                 if ((_board.Bitboards[(int)Piece.WhitePawn] & FileMasks[index]) == 0) {
-    //                     middlegame -= SemiOpenFileScore;
-    //                     endgame -= SemiOpenFileScore;
-    //                 }
-    //                 
-    //                 if (((_board.Bitboards[(int)Piece.WhitePawn] | _board.Bitboards[(int)Piece.BlackPawn]) & FileMasks[index]) == 0) {
-    //                     middlegame -= OpenFileScore;
-    //                     endgame -= OpenFileScore;
-    //                 }
-    //             }
-    //             
-    //             if (piece == Piece.BlackKing) {
-    //                 if ((_board.Bitboards[(int)Piece.BlackPawn] & FileMasks[index]) == 0) {
-    //                     middlegame += SemiOpenFileScore;
-    //                     endgame += SemiOpenFileScore;
-    //                 }
-    //                 
-    //                 if (((_board.Bitboards[(int)Piece.WhitePawn] | _board.Bitboards[(int)Piece.BlackPawn]) & FileMasks[index]) == 0) {
-    //                     middlegame += OpenFileScore;
-    //                     endgame += OpenFileScore;
-    //                 }
-    //             }
-    //             //
-    //             // if (piece == Piece.WhiteBishop) {
-    //             //     int mobility = BitboardHelper.CountBits(Movegen.GetBishopAttacks((Square)index, _board.Blockers[2]));
-    //             //     middlegame += mobility;
-    //             //     endgame += mobility;
-    //             // }
-    //             //
-    //             // if (piece == Piece.BlackBishop) {
-    //             //     int mobility = BitboardHelper.CountBits(Movegen.GetBishopAttacks((Square)index, _board.Blockers[2]));
-    //             //     middlegame -= mobility;
-    //             //     endgame -= mobility;
-    //             // }
-    //             //
-    //             // if (piece == Piece.WhiteQueen) {
-    //             //     int mobility = BitboardHelper.CountBits(Movegen.GetQueenAttacks((Square)index, _board.Blockers[2]));
-    //             //     middlegame += mobility;
-    //             //     endgame += mobility;
-    //             // }
-    //             //
-    //             // if (piece == Piece.BlackQueen) {
-    //             //     int mobility = BitboardHelper.CountBits(Movegen.GetQueenAttacks((Square)index, _board.Blockers[2]));
-    //             //     middlegame -= mobility;
-    //             //     endgame -= mobility;
-    //             // }
-    //             
-    //             middlegame += (PieceWeights[(int)piece % 6] + MiddleGamePieceSquareTables[(int)piece, index]) *
-    //                           ((int)piece < 6 ? 1 : -1);
-    //             endgame += (PieceWeights[(int)piece % 6] + EndGamePieceSquareTables[(int)piece, index]) *
-    //                        ((int)piece < 6 ? 1 : -1);
-    //             phase += GamePhases[(int)piece % 6];
-    //             
-    //             BitboardHelper.PopBitAtIndex(index, ref bitboard);
-    //         }
-    //     }
-    //     
-    //     return (middlegame * phase + endgame * (24 - phase)) / 24 * (_board.SideToMove == SideToMove.White ? 1 : -1);
-    // }
-    
+  
     public static void Stop() {
         _stopSearch = true;
     }
