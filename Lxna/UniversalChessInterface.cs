@@ -67,6 +67,10 @@ namespace Lxna {
             Console.WriteLine("                          the 'position' command");
             Console.WriteLine("    * depth <x>");
             Console.WriteLine("                          search x plies");
+            Console.WriteLine("    * wtime <x>");
+            Console.WriteLine("                          search as white with x milliseconds left on the timer");
+            Console.WriteLine("    * btime <x>");
+            Console.WriteLine("                          search as black with x milliseconds left on the timer");
             Console.WriteLine("    * infinite");
             Console.WriteLine("                          search until the 'stop' command is executed.");
             Console.WriteLine("    * perft <x>");
