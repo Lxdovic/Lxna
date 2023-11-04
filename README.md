@@ -22,6 +22,10 @@ Bitboard chess engine written from scratch in C#
 
 ## Documentation (UCI Protocol)
 
+### Fast start
+
+By default, the engine starts with a search at a certain depth, in order to "pre compile" some of the code that's going to run during the search. You can disable this by starting the engine with the `--fastinit` flag.
+
 ### Show commands
 
 `help`
