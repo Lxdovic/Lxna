@@ -1,14 +1,19 @@
 namespace Lxna {
     public static class UniversalChessInterface {
         private static Thread? _searchThread;
+        private static bool _shouldQuit;
 
-        public static void StartLoop() {
+        public static void StartLoop(bool fastInit) {
+            // let JIT run for a bit
+            // https://stackoverflow.com/a/28950600
+            if (!fastInit) Search.Think(Engine.Board, false, 0, 6, false);
+            
             Console.WriteLine("_________________________________________________________________\n");
             Console.WriteLine("       Lxna engine by Lxdovic (https://github.com/Lxdovic)       ");
             Console.WriteLine("_________________________________________________________________\n");
             Console.WriteLine("> help for command list");
 
-            while (true) {
+            while (!_shouldQuit) {
                 var command = Console.ReadLine();
 
                 if (command == null) continue;
@@ -42,7 +47,9 @@ namespace Lxna {
                 case "help":
                     PrintCommands();
                     break;
-                case "quit": return;
+                case "quit":
+                    _shouldQuit = true;
+                    return;
             }
         }
 
@@ -60,6 +67,10 @@ namespace Lxna {
             Console.WriteLine("                          the 'position' command");
             Console.WriteLine("    * depth <x>");
             Console.WriteLine("                          search x plies");
+            Console.WriteLine("    * wtime <x>");
+            Console.WriteLine("                          search as white with x milliseconds left on the timer");
+            Console.WriteLine("    * btime <x>");
+            Console.WriteLine("                          search as black with x milliseconds left on the timer");
             Console.WriteLine("    * infinite");
             Console.WriteLine("                          search until the 'stop' command is executed.");
             Console.WriteLine("    * perft <x>");

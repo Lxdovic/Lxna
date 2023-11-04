@@ -14,7 +14,7 @@ namespace Lxna {
         public static int EncodeMove(int source, int target, int piece, int promoted, int capture,
             int doublePush, int enPassant,
             int castling) {
-            return source | (target << 6) | (piece << 12) | (promoted << 16) | (capture << 20) | (doublePush << 21) | (enPassant << 22) | (castling << 23);
+            return source | (target << 6) | (piece << 12) | (promoted << 16) | (capture << 20) | (doublePush << 24) | (enPassant << 25) | (castling << 26);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -26,20 +26,29 @@ namespace Lxna {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMovePromotion(int move) { return (move & 0xf0000) >> 16; }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetMoveCapture(int move) { return move & 0x100000; }
+        public static int GetMoveCapture(int move) { return move & 0xf00000; }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetMoveDoublePush(int move) { return move & 0x200000; }
+        public static int GetMoveDoublePush(int move) { return move & 0x1000000; }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetMoveEnPassant(int move) { return move & 0x400000; }
+        public static int GetMoveEnPassant(int move) { return move & 0x2000000; }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetMoveCastling(int move) { return move & 0x800000; }
+        public static int GetMoveCastling(int move) { return move & 0x4000000; }
+        
+        // public static int GetMoveCapture(int move) { return move & 0x100000; }
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static int GetMoveDoublePush(int move) { return move & 0x200000; }
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static int GetMoveEnPassant(int move) { return move & 0x400000; }
+        //
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static int GetMoveCastling(int move) { return move & 0x800000; }
         
         public static void Print(int move) {
             Square source = (Square)GetMoveSource(move);
             Square target = (Square)GetMoveTarget(move);
             
-            Console.Write("move {0}{1}", source, target);
+            Console.Write("{0}{1}", source.ToString().ToLower(), target.ToString().ToLower());
         }
         
         public static void PrintVerbose(int move) {

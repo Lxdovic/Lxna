@@ -312,8 +312,6 @@ namespace Lxna {
                                     moveList[currMoveIndex++] = Move.EncodeMove(source, target, piece, (int)Piece.WhiteRook, 0, 0, 0, 0);
                                     moveList[currMoveIndex++] = Move.EncodeMove(source, target, piece, (int)Piece.WhiteBishop, 0, 0, 0, 0);
                                     moveList[currMoveIndex++] = Move.EncodeMove(source, target, piece, (int)Piece.WhiteKnight, 0, 0, 0, 0);
-
-                                    currMoveIndex += 4;
                                 }
 
                                 else {

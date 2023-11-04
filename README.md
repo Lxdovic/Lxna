@@ -1,20 +1,24 @@
 # Lxna Engine
 
-Bitboard chess engine with zero dependencies written in C#
+Bitboard chess engine written from scratch in C#
 
 ## Authors
 
 - [@Lxdovic](https://www.github.com/Lxdovic)
 
-## Features (V0.1)
+## Features (V0.2.0)
 
-- [Simplified Evaluation Function](https://www.chessprogramming.org/Simplified_Evaluation_Function)
+- [PeStO's Evaluation Function](https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function)
 - [Negamax](https://www.chessprogramming.org/Negamax)
 - [Alpha-Beta Pruning](https://www.chessprogramming.org/Alpha-Beta)
 - [Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening)
 - [Transposition Tables](https://www.chessprogramming.org/Transposition_Table)
 - [Move Ordering](https://www.chessprogramming.org/Move_Ordering)
 - [Null Move Forward Pruning](https://web.archive.org/web/20071031095933/http://www.brucemo.com/compchess/programming/nullmove.htm)
+- [Quiescence Search](https://www.chessprogramming.org/Quiescence_Search)
+- [Principal Variation Search](https://www.chessprogramming.org/Principal_Variation_Search)
+- [Killer Heuristic](https://www.chessprogramming.org/Killer_Heuristic)
+- [History Heuristic](https://www.chessprogramming.org/History_Heuristic)
 
 ## Documentation (UCI Protocol)
 
@@ -95,6 +99,8 @@ Castling:              KQkq
 ```
 
 ### Start searching
+
+example input
 
 ```
 go

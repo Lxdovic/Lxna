@@ -44,7 +44,7 @@ namespace Lxna
             "\u265B",
             "\u265A",
         };
-        public static readonly int[] CastlingRights = new int[64] {
+        public static readonly int[] CastlingRights = {
              7, 15, 15, 15,  3, 15, 15, 11,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
@@ -63,6 +63,7 @@ namespace Lxna
         private List<int> _castlingistory = new();
         private List<ulong[]> _bitboardsHistory = new();        
         private List<ulong[]> _blockersHistory = new();
+        // public List<ulong> _boardHistory = new();
 
         public ulong GetZobrist() {
             ulong finalKey = 0x0UL;
@@ -128,11 +129,7 @@ namespace Lxna
             
             ParseFen(fen);
             
-            _enPassantHistory.Add(EnPassant);
-            _sideToMoveHistory.Add(SideToMove);
-            _castlingistory.Add(Castling);
-            _bitboardsHistory.Add(Bitboards);
-            _blockersHistory.Add(Blockers);
+            Copy();
         }
         
         public String GetFen() {
@@ -241,12 +238,12 @@ namespace Lxna
         
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public void Copy() {
-            ulong[] bitboardsCopyArray = new ulong[12];
-            ulong[] blockersCopyArray = new ulong[3];
-            
             _enPassantHistory.Add(EnPassant);
             _sideToMoveHistory.Add(SideToMove);
             _castlingistory.Add(Castling);
+            
+            ulong[] bitboardsCopyArray = new ulong[12];
+            ulong[] blockersCopyArray = new ulong[3];
             
             Array.Copy(Bitboards, bitboardsCopyArray, Bitboards.Length);
             Array.Copy(Blockers, blockersCopyArray, Blockers.Length);
@@ -257,20 +254,19 @@ namespace Lxna
         
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public void TakeBack() {
-            // using _enPassantHistory or any other history here doesn't matter, they are all synced
-            int count = _enPassantHistory.Count - 1;
+            EnPassant = _enPassantHistory[ _enPassantHistory.Count - 1];
+            SideToMove = _sideToMoveHistory[ _sideToMoveHistory.Count - 1];
+            Castling = _castlingistory[ _castlingistory.Count - 1];
+            Bitboards = _bitboardsHistory[ _bitboardsHistory.Count - 1];
+            Blockers = _blockersHistory[ _blockersHistory.Count - 1];
             
-            EnPassant = _enPassantHistory[count];
-            SideToMove = _sideToMoveHistory[count];
-            Castling = _castlingistory[count];
-            Bitboards = _bitboardsHistory[count];
-            Blockers = _blockersHistory[count];
+            _enPassantHistory.RemoveAt( _enPassantHistory.Count - 1);
+            _sideToMoveHistory.RemoveAt( _sideToMoveHistory.Count - 1);
+            _castlingistory.RemoveAt( _castlingistory.Count - 1);
+            _bitboardsHistory.RemoveAt( _bitboardsHistory.Count - 1);
+            _blockersHistory.RemoveAt( _blockersHistory.Count - 1);
             
-            _enPassantHistory.RemoveAt(count);
-            _sideToMoveHistory.RemoveAt(count);
-            _castlingistory.RemoveAt(count);
-            _bitboardsHistory.RemoveAt(count);
-            _blockersHistory.RemoveAt(count);
+            // if (_boardHistory.Count > 0) _boardHistory.RemoveAt(_boardHistory.Count - 1);
         }
 
         public void PrintAttacks(SideToMove side) {
@@ -301,10 +297,13 @@ namespace Lxna
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MakeMove(int move) {
             Copy();
+            
+            // _boardHistory.Add(GetZobrist());
 
             int piece = Move.GetMovePiece(move);
 
             if ((SideToMove == SideToMove.White && piece > 5) || (SideToMove == SideToMove.Black && piece < 6)) {
+                // _boardHistory.RemoveAt(_boardHistory.Count - 1);
                 return false;
             }
             
@@ -411,6 +410,7 @@ namespace Lxna
             if (IsSquareAttacked(
                 (Square)BitboardHelper.GetLSFBIndex(Bitboards[11 - (int)SideToMove * 6]),
                 SideToMove)) {
+                // _boardHistory.RemoveAt(_boardHistory.Count - 1);
                 TakeBack();
 
                 return false;
@@ -430,10 +430,6 @@ namespace Lxna
                      (Bitboards[(int)Piece.WhiteBishop] | Bitboards[(int)Piece.WhiteQueen])) > 0) return true;
                 if ((Movegen.GetRookAttacks(square, Blockers[(int)SideToMove.Both]) &
                      (Bitboards[(int)Piece.WhiteRook] | Bitboards[(int)Piece.WhiteQueen])) > 0) return true;
-                
-                // if ((Movegen.GetBishopAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.WhiteBishop]) > 0) return true;
-                // if ((Movegen.GetRookAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.WhiteRook]) > 0) return true;
-                // if ((Movegen.GetQueenAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.WhiteQueen]) > 0) return true;
             }
 
             if (side == SideToMove.Black) {
@@ -446,48 +442,8 @@ namespace Lxna
                 if ((Movegen.GetRookAttacks(square, Blockers[(int)SideToMove.Both]) &
                      (Bitboards[(int)Piece.BlackRook] | Bitboards[(int)Piece.BlackQueen])) > 0) return true;
                 
-                // if ((Movegen.GetBishopAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.BlackBishop]) > 0) return true;
-                // if ((Movegen.GetRookAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.BlackRook]) > 0) return true;
-                // if ((Movegen.GetQueenAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.BlackQueen]) > 0) return true;
             }
-            // if (side == SideToMove.White && 
-            //     (Movegen.PawnAttacks[(int)SideToMove.Black, (int)square] & 
-            //      Bitboards[(int)Piece.WhitePawn]) > 0) return true;
-            //
-            // if (side == SideToMove.Black && 
-            //     (Movegen.PawnAttacks[(int)SideToMove.White, (int)square] & 
-            //      Bitboards[(int)Piece.BlackPawn]) > 0) return true;
-            //
-            // if ((Movegen.KnightAttacks[(int)square] &
-            //      (side == SideToMove.White
-            //          ? Bitboards[(int)Piece.WhiteKnight]
-            //          : Bitboards[(int)Piece.BlackKnight]
-            //      )) > 0) return true;
-            //
-            // if ((Movegen.KingAttacks[(int)square] &
-            //      (side == SideToMove.White
-            //          ? Bitboards[(int)Piece.WhiteKing]
-            //          : Bitboards[(int)Piece.BlackKing]
-            //      )) > 0) return true;
-            //
-            // if ((Movegen.GetBishopAttacks(square, Blockers[(int)SideToMove.Both]) & 
-            //      (side == SideToMove.White
-            //          ? Bitboards[(int)Piece.WhiteBishop]
-            //          : Bitboards[(int)Piece.BlackBishop]
-            //      )) > 0) return true;
-            //
-            // if ((Movegen.GetRookAttacks(square, Blockers[(int)SideToMove.Both]) & 
-            //      (side == SideToMove.White
-            //          ? Bitboards[(int)Piece.WhiteRook]
-            //          : Bitboards[(int)Piece.BlackRook]
-            //      )) > 0) return true;
-            //
-            // if ((Movegen.GetQueenAttacks(square, Blockers[(int)SideToMove.Both]) & 
-            //      (side == SideToMove.White
-            //          ? Bitboards[(int)Piece.WhiteQueen]
-            //          : Bitboards[(int)Piece.BlackQueen]
-            //      )) > 0) return true;
-            
+           
             return false;
         }
 
