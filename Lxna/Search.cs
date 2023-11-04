@@ -134,6 +134,8 @@ public class Search {
     private static readonly int[] GamePhases = { 0, 1, 1, 2, 4, 0 };
     public static int[] PvLength = new int[64]; 
     public static int[,] PvTable = new int[64, 64];
+    private static int[,,] _historyMoves = new int[2, 7, 64];
+    private static int[] _killerMoves = new int[100];
 
     public enum MoveFlag { Alpha, Exact, Beta }
     public record struct TranspositionTableEntry(ulong Key, int Score, int Depth, MoveFlag Flag, int Move);
@@ -210,8 +212,7 @@ public class Search {
 
         bool isInCheck = _board.IsInCheck();
         
-        if (!isInCheck && depth >= 3 && ply > 0 && nullCheck)
-        {
+        if (!isInCheck && depth >= 3 && ply > 0 && nullCheck) {
             _board.MakeNullMove();
             int value = -Negamax(-beta, -beta + 1, depth - 3, ply, false);
             _board.TakeBack();
@@ -231,17 +232,17 @@ public class Search {
         
         for (int i = 0; i < moveSpan.Length; i++) {
             int piece = Move.GetMovePiece(moveSpan[i]);
+            int target = Move.GetMoveTarget(moveSpan[i]);
             int capture = Move.GetMoveCapture(moveSpan[i]);
-            int promotion = Move.GetMovePromotion(moveSpan[i]);
             
             moveScores[i] = moveSpan[i] == entry.Move 
-                ? 900 
-                : capture > 0 ? 100 * (capture - piece)
-                : promotion > 0 ? promotion * 100 : 0;
+                ? 9000000 
+                : capture > 0 ? 1000000 * (capture - piece) : _killerMoves[ply] == moveSpan[i] ? 900000
+                : _historyMoves[ply & 1, piece % 6, target];
         }
 
         for (int i = 0; i < moveSpan.Length; i++) {
-            if ((_timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
+            if ((_nodes % 2048 == 0 && _timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
             
             for (int j = i + 1; j < moveSpan.Length; j++) {
                 if (moveScores[i] < moveScores[j])
@@ -283,7 +284,11 @@ public class Search {
                     PvLength[ply] = PvLength[ply + 1];
                 }
                 
-                if (alpha >= beta) break;
+                if (alpha >= beta) {
+                    _killerMoves[ply] = move;
+                    _historyMoves[ply & 1, Move.GetMovePiece(move) % 6, Move.GetMoveTarget(move)] += depth * depth;
+                    break;
+                };
             }
         }
 

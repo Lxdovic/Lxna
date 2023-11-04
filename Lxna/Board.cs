@@ -44,7 +44,7 @@ namespace Lxna
             "\u265B",
             "\u265A",
         };
-        public static readonly int[] CastlingRights = new int[64] {
+        public static readonly int[] CastlingRights = {
              7, 15, 15, 15,  3, 15, 15, 11,
             15, 15, 15, 15, 15, 15, 15, 15,
             15, 15, 15, 15, 15, 15, 15, 15,
@@ -430,10 +430,6 @@ namespace Lxna
                      (Bitboards[(int)Piece.WhiteBishop] | Bitboards[(int)Piece.WhiteQueen])) > 0) return true;
                 if ((Movegen.GetRookAttacks(square, Blockers[(int)SideToMove.Both]) &
                      (Bitboards[(int)Piece.WhiteRook] | Bitboards[(int)Piece.WhiteQueen])) > 0) return true;
-                
-                // if ((Movegen.GetBishopAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.WhiteBishop]) > 0) return true;
-                // if ((Movegen.GetRookAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.WhiteRook]) > 0) return true;
-                // if ((Movegen.GetQueenAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.WhiteQueen]) > 0) return true;
             }
 
             if (side == SideToMove.Black) {
@@ -446,48 +442,8 @@ namespace Lxna
                 if ((Movegen.GetRookAttacks(square, Blockers[(int)SideToMove.Both]) &
                      (Bitboards[(int)Piece.BlackRook] | Bitboards[(int)Piece.BlackQueen])) > 0) return true;
                 
-                // if ((Movegen.GetBishopAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.BlackBishop]) > 0) return true;
-                // if ((Movegen.GetRookAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.BlackRook]) > 0) return true;
-                // if ((Movegen.GetQueenAttacks(square, Blockers[(int)SideToMove.Both]) & Bitboards[(int)Piece.BlackQueen]) > 0) return true;
             }
-            // if (side == SideToMove.White && 
-            //     (Movegen.PawnAttacks[(int)SideToMove.Black, (int)square] & 
-            //      Bitboards[(int)Piece.WhitePawn]) > 0) return true;
-            //
-            // if (side == SideToMove.Black && 
-            //     (Movegen.PawnAttacks[(int)SideToMove.White, (int)square] & 
-            //      Bitboards[(int)Piece.BlackPawn]) > 0) return true;
-            //
-            // if ((Movegen.KnightAttacks[(int)square] &
-            //      (side == SideToMove.White
-            //          ? Bitboards[(int)Piece.WhiteKnight]
-            //          : Bitboards[(int)Piece.BlackKnight]
-            //      )) > 0) return true;
-            //
-            // if ((Movegen.KingAttacks[(int)square] &
-            //      (side == SideToMove.White
-            //          ? Bitboards[(int)Piece.WhiteKing]
-            //          : Bitboards[(int)Piece.BlackKing]
-            //      )) > 0) return true;
-            //
-            // if ((Movegen.GetBishopAttacks(square, Blockers[(int)SideToMove.Both]) & 
-            //      (side == SideToMove.White
-            //          ? Bitboards[(int)Piece.WhiteBishop]
-            //          : Bitboards[(int)Piece.BlackBishop]
-            //      )) > 0) return true;
-            //
-            // if ((Movegen.GetRookAttacks(square, Blockers[(int)SideToMove.Both]) & 
-            //      (side == SideToMove.White
-            //          ? Bitboards[(int)Piece.WhiteRook]
-            //          : Bitboards[(int)Piece.BlackRook]
-            //      )) > 0) return true;
-            //
-            // if ((Movegen.GetQueenAttacks(square, Blockers[(int)SideToMove.Both]) & 
-            //      (side == SideToMove.White
-            //          ? Bitboards[(int)Piece.WhiteQueen]
-            //          : Bitboards[(int)Piece.BlackQueen]
-            //      )) > 0) return true;
-            
+           
             return false;
         }
 
