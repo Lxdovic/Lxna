@@ -6,6 +6,10 @@ public class Search {
     private static ulong _nodes; 
     private static readonly int[] MiddleGamePieceWeights = { 82, 337, 365, 477, 1025,  0};
     private static readonly int[] EndGamePieceWeights = { 94, 281, 297, 512,  936,  0};
+    private static int[,] WhiteMiddleGamePieceSquareTables = new int[6, 64];
+    private static int[,] WhiteEndGamePieceSquareTables = new int[6, 64];
+    private static int[,] BlackMiddleGamePieceSquareTables = new int[6, 64];
+    private static int[,] BlackEndGamePieceSquareTables = new int[6, 64];
     private static readonly int[,] MiddleGamePieceSquareTables = {
         {
             0,   0,   0,   0,   0,   0,  0,   0,
@@ -143,6 +147,29 @@ public class Search {
     private static bool _timeControl = true;
     private static bool _stopSearch;
     private static int _time;
+
+    public static void Init() {
+        for (int piece = (int)Piece.WhitePawn; piece <= (int)Piece.BlackKing; piece++) {
+            bool isWhite = piece < 6;
+            
+            for (int square = 0; square < 64; square++) {
+                int index = isWhite ? square : square ^ 56;
+                int pIndex = piece % 6;
+
+                if (isWhite) {
+                    WhiteMiddleGamePieceSquareTables[pIndex, square] = MiddleGamePieceWeights[pIndex] + MiddleGamePieceSquareTables[pIndex, index];
+                    WhiteEndGamePieceSquareTables[pIndex, square] = EndGamePieceWeights[pIndex] + EndGamePieceSquareTables[pIndex, index];
+                }
+
+                else {
+                    BlackMiddleGamePieceSquareTables[pIndex, square] =
+                        (MiddleGamePieceWeights[pIndex] + MiddleGamePieceSquareTables[pIndex, index]) * -1;
+                    BlackEndGamePieceSquareTables[pIndex, square] =
+                        (EndGamePieceWeights[pIndex] + EndGamePieceSquareTables[pIndex, index]) * -1;
+                }
+            }
+        }
+    }
     
     public static int Think(Board board, bool timeControl, int time = 1000, int depth = 100, bool shouldPrint = true) {
         _timer = new Timer();
@@ -152,15 +179,27 @@ public class Search {
         _timeControl = timeControl;
 
         int currentDepth, bestMove = _board.GetPseudoLegalMoves()[0];
+        int alpha = -100000, beta = 100000;
         
         for (currentDepth = 1; currentDepth <= depth; currentDepth++) {
             _nodes = 0;
             
-            int iterationScore = Negamax(-100000, 100000, currentDepth, 0, true);
+            int iterationScore = Negamax(alpha, beta, currentDepth, 0, true);
 
             if ((_timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
             
             bestMove = PvTable[0,0];
+            
+            if (iterationScore <= alpha || iterationScore >= beta) {
+                alpha = -100000;
+                beta = 100000;
+                currentDepth--;
+                continue;
+            }
+            
+            alpha = iterationScore - 50;
+            beta = iterationScore + 50;
+
 
             if (shouldPrint) {
                 Console.Write("depth {0,2} score {1,4}, nodes {2,9:n0} time {3,4:n0}ms pv ", currentDepth,
@@ -337,8 +376,10 @@ public class Search {
                 int index = isWhite ? square : square ^ 56;
                 int pIndex = piece % 6;
                 
-                middleGame += (MiddleGamePieceWeights[pIndex] + MiddleGamePieceSquareTables[pIndex, index]) * side;
-                endGame += (EndGamePieceWeights[pIndex] + EndGamePieceSquareTables[pIndex, index]) * side;
+                // middleGame += (MiddleGamePieceWeights[pIndex] + MiddleGamePieceSquareTables[pIndex, index]) * side;
+                // endGame += (EndGamePieceWeights[pIndex] + EndGamePieceSquareTables[pIndex, index]) * side;
+                middleGame += isWhite ? WhiteMiddleGamePieceSquareTables[pIndex, square] : BlackMiddleGamePieceSquareTables[pIndex, square];
+                endGame += isWhite ? WhiteEndGamePieceSquareTables[pIndex, square] : BlackEndGamePieceSquareTables[pIndex, square];
                 phase += GamePhases[pIndex];
 
                 if (piece == (int)Piece.WhiteQueen || piece == (int)Piece.BlackQueen) {
