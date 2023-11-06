@@ -237,7 +237,7 @@ public class Search {
         
         if (depth == 0) {
             _nodes++;
-            return Quiescence(alpha, beta, 2);
+            return Quiescence(alpha, beta, 4);
         }
         
         ulong positionKey = _board.GetZobrist();
@@ -376,8 +376,6 @@ public class Search {
                 int index = isWhite ? square : square ^ 56;
                 int pIndex = piece % 6;
                 
-                // middleGame += (MiddleGamePieceWeights[pIndex] + MiddleGamePieceSquareTables[pIndex, index]) * side;
-                // endGame += (EndGamePieceWeights[pIndex] + EndGamePieceSquareTables[pIndex, index]) * side;
                 middleGame += isWhite ? WhiteMiddleGamePieceSquareTables[pIndex, square] : BlackMiddleGamePieceSquareTables[pIndex, square];
                 endGame += isWhite ? WhiteEndGamePieceSquareTables[pIndex, square] : BlackEndGamePieceSquareTables[pIndex, square];
                 phase += GamePhases[pIndex];
