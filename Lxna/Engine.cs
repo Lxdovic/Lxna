@@ -101,6 +101,7 @@
 
         public static void Main(string[] args) {
             Movegen.Init();
+            Search.Init();
             UniversalChessInterface.StartLoop(args.Contains("--fastinit"));
         }
     }

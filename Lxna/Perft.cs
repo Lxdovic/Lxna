@@ -2,23 +2,25 @@ namespace Lxna;
 
 public class Perft {
     private static ulong _nodes;
+    private static Board _board;
     
-    public static void PerfTest(int depth) {
+    public static ulong PerfTest(Board board, int depth) {
+        _board = board;
         _nodes = 0;
             
         Span<int> moveSpan = stackalloc int[218];
-        Engine.Board.GetPseudoLegalMovesNonAlloc(ref moveSpan);
+        _board.GetPseudoLegalMovesNonAlloc(ref moveSpan);
             
         Timer timer = new Timer();
             
         foreach (int move in moveSpan) {
-            if (!Engine.Board.MakeMove(move)) continue;
+            if (!_board.MakeMove(move)) continue;
             
             ulong oldNodes = _nodes;
                 
             PerfDriver(depth - 1);
                 
-            Engine.Board.TakeBack();
+            _board.TakeBack();
 
             ulong cumulativeNodes = _nodes - oldNodes;
                 
@@ -30,6 +32,8 @@ public class Perft {
         }
             
         Console.WriteLine("\nperft depth {0,1} nodes {1,9:n0} time {2,4}\n", depth, _nodes, timer.GetDiff());
+
+        return _nodes;
     }
 
     private static void PerfDriver(int depth) {
@@ -40,14 +44,14 @@ public class Perft {
         }
             
         Span<int> moveSpan = stackalloc int[218];
-        Engine.Board.GetPseudoLegalMovesNonAlloc(ref moveSpan);
+        _board.GetPseudoLegalMovesNonAlloc(ref moveSpan);
             
         for (int i = 0; i < moveSpan.Length; i++) {
-            if (!Engine.Board.MakeMove(moveSpan[i])) continue;
+            if (!_board.MakeMove(moveSpan[i])) continue;
                 
             PerfDriver(depth - 1);
                 
-            Engine.Board.TakeBack();
+            _board.TakeBack();
         }
     }
 }

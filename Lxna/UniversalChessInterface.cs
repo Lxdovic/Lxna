@@ -12,6 +12,7 @@ namespace Lxna {
             Console.WriteLine("       Lxna engine by Lxdovic (https://github.com/Lxdovic)       ");
             Console.WriteLine("_________________________________________________________________\n");
             Console.WriteLine("> help for command list");
+            
 
             while (!_shouldQuit) {
                 var command = Console.ReadLine();
@@ -47,6 +48,12 @@ namespace Lxna {
                 case "help":
                     PrintCommands();
                     break;
+                case "move":
+                    ParseMakeMove(instructions.Skip(1).ToArray());
+                    break;
+                case "fen":
+                    PrintFen();
+                    break;
                 case "quit":
                     _shouldQuit = true;
                     return;
@@ -75,13 +82,28 @@ namespace Lxna {
             Console.WriteLine("                          search until the 'stop' command is executed.");
             Console.WriteLine("    * perft <x>");
             Console.WriteLine("                          executes a performance test x plies");
+            Console.WriteLine("* move <move>             make a move using he from and to square (eg. e2e4)");
             Console.WriteLine("* stop                    stop calculating as soon as possible");
+            Console.WriteLine("* fen                     print the current fen");
             Console.WriteLine("* quit                    exit the program");
         }
 
         public static void StopSearch() {
             Search.Stop();
             if (_searchThread != null) _searchThread.Interrupt();
+        }
+        
+        public static void PrintFen() {
+            String fen = Engine.Board.GetFen();
+            
+            Console.WriteLine(fen);
+        }
+
+        public static void ParseMakeMove(String[] instructions) {
+            int move = ParseMove(Engine.Board, instructions[0]);
+            
+            if (!Engine.Board.MakeMove(move)) Console.WriteLine("illegal move.");
+            else Engine.Board.Print();
         }
 
         public static void PrintUci() {

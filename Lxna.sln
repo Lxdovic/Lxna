@@ -1,6 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lxna", "Lxna\Lxna.csproj", "{A27A6D24-94D6-4C98-A45D-34FC0D2B1080}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lxna.Tests", "Lxna.Tests\Lxna.Tests.csproj", "{8E88A78D-091B-44D5-A26B-F93B665FC232}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +15,13 @@ Global
 		{A27A6D24-94D6-4C98-A45D-34FC0D2B1080}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A27A6D24-94D6-4C98-A45D-34FC0D2B1080}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A27A6D24-94D6-4C98-A45D-34FC0D2B1080}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55536DCB-20C7-4E91-B7FF-784C993AC0F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55536DCB-20C7-4E91-B7FF-784C993AC0F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55536DCB-20C7-4E91-B7FF-784C993AC0F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55536DCB-20C7-4E91-B7FF-784C993AC0F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E88A78D-091B-44D5-A26B-F93B665FC232}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E88A78D-091B-44D5-A26B-F93B665FC232}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E88A78D-091B-44D5-A26B-F93B665FC232}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E88A78D-091B-44D5-A26B-F93B665FC232}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
