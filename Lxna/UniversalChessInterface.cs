@@ -12,7 +12,6 @@ namespace Lxna {
             Console.WriteLine("       Lxna engine by Lxdovic (https://github.com/Lxdovic)       ");
             Console.WriteLine("_________________________________________________________________\n");
             Console.WriteLine("> help for command list");
-            
 
             while (!_shouldQuit) {
                 var command = Console.ReadLine();
@@ -139,7 +138,7 @@ namespace Lxna {
 
                 case "perft": {
                     _searchThread = new Thread(() => Search.Think(Engine.Board, false));
-                    _searchThread = new Thread(() => Perft.PerfTest(int.Parse(instructions[1])));
+                    _searchThread = new Thread(() => Perft.PerfTest(Engine.Board, int.Parse(instructions[1])));
                     _searchThread.Start();
                     break;
                 }

@@ -6,10 +6,12 @@ public class Search {
     private static ulong _nodes; 
     private static readonly int[] MiddleGamePieceWeights = { 82, 337, 365, 477, 1025,  0};
     private static readonly int[] EndGamePieceWeights = { 94, 281, 297, 512,  936,  0};
-    private static int[,] WhiteMiddleGamePieceSquareTables = new int[6, 64];
-    private static int[,] WhiteEndGamePieceSquareTables = new int[6, 64];
-    private static int[,] BlackMiddleGamePieceSquareTables = new int[6, 64];
-    private static int[,] BlackEndGamePieceSquareTables = new int[6, 64];
+    private static int[,] _whiteMiddleGamePieceSquareTables = new int[6, 64];
+    private static int[,] _whiteEndGamePieceSquareTables = new int[6, 64];
+    private static int[,] _blackMiddleGamePieceSquareTables = new int[6, 64];
+    private static int[,] _blackEndGamePieceSquareTables = new int[6, 64];
+    // private static ulong[] _pawnFiles = new ulong[8];
+    // private static ulong[] _pawnRanks = new ulong[8];
     private static readonly int[,] MiddleGamePieceSquareTables = {
         {
             0,   0,   0,   0,   0,   0,  0,   0,
@@ -149,6 +151,19 @@ public class Search {
     private static int _time;
 
     public static void Init() {
+        // for (int i = 0; i < 8; i++) {
+        //     ulong fileBitboard = 0x0;
+        //     ulong rankBitboard = 0x0;
+        //
+        //     for (int j = 0; j < 8; j++) {
+        //         BitboardHelper.SetBitAtIndex(i * 8 + j, ref rankBitboard);
+        //         BitboardHelper.SetBitAtIndex(j * 8 + i, ref fileBitboard);
+        //     }
+        //
+        //     BitboardHelper.Print(fileBitboard);
+        //     BitboardHelper.Print(rankBitboard);
+        // }
+        
         for (int piece = (int)Piece.WhitePawn; piece <= (int)Piece.BlackKing; piece++) {
             bool isWhite = piece < 6;
             
@@ -157,14 +172,14 @@ public class Search {
                 int pIndex = piece % 6;
 
                 if (isWhite) {
-                    WhiteMiddleGamePieceSquareTables[pIndex, square] = MiddleGamePieceWeights[pIndex] + MiddleGamePieceSquareTables[pIndex, index];
-                    WhiteEndGamePieceSquareTables[pIndex, square] = EndGamePieceWeights[pIndex] + EndGamePieceSquareTables[pIndex, index];
+                    _whiteMiddleGamePieceSquareTables[pIndex, square] = MiddleGamePieceWeights[pIndex] + MiddleGamePieceSquareTables[pIndex, index];
+                    _whiteEndGamePieceSquareTables[pIndex, square] = EndGamePieceWeights[pIndex] + EndGamePieceSquareTables[pIndex, index];
                 }
 
                 else {
-                    BlackMiddleGamePieceSquareTables[pIndex, square] =
+                    _blackMiddleGamePieceSquareTables[pIndex, square] =
                         (MiddleGamePieceWeights[pIndex] + MiddleGamePieceSquareTables[pIndex, index]) * -1;
-                    BlackEndGamePieceSquareTables[pIndex, square] =
+                    _blackEndGamePieceSquareTables[pIndex, square] =
                         (EndGamePieceWeights[pIndex] + EndGamePieceSquareTables[pIndex, index]) * -1;
                 }
             }
@@ -197,8 +212,8 @@ public class Search {
                 continue;
             }
             
-            alpha = iterationScore - 50;
-            beta = iterationScore + 50;
+            alpha = iterationScore - 100;
+            beta = iterationScore + 100;
 
 
             if (shouldPrint) {
@@ -273,11 +288,12 @@ public class Search {
             int piece = Move.GetMovePiece(moveSpan[i]);
             int target = Move.GetMoveTarget(moveSpan[i]);
             int capture = Move.GetMoveCapture(moveSpan[i]);
+            int promotion = Move.GetMovePromotion(moveSpan[i]);
             
             moveScores[i] = moveSpan[i] == entry.Move 
                 ? 9000000 
                 : capture > 0 ? 1000000 * (capture - piece) : _killerMoves[ply] == moveSpan[i] ? 900000
-                : _historyMoves[ply & 1, piece % 6, target];
+                : promotion > 0 ? 1000 * promotion : _historyMoves[ply & 1, piece % 6, target];
         }
 
         for (int i = 0; i < moveSpan.Length; i++) {
@@ -376,9 +392,15 @@ public class Search {
                 int index = isWhite ? square : square ^ 56;
                 int pIndex = piece % 6;
                 
-                middleGame += isWhite ? WhiteMiddleGamePieceSquareTables[pIndex, square] : BlackMiddleGamePieceSquareTables[pIndex, square];
-                endGame += isWhite ? WhiteEndGamePieceSquareTables[pIndex, square] : BlackEndGamePieceSquareTables[pIndex, square];
+                middleGame += isWhite ? _whiteMiddleGamePieceSquareTables[pIndex, square] : _blackMiddleGamePieceSquareTables[pIndex, square];
+                endGame += isWhite ? _whiteEndGamePieceSquareTables[pIndex, square] : _blackEndGamePieceSquareTables[pIndex, square];
                 phase += GamePhases[pIndex];
+                
+                // if (piece == (int)Piece.WhitePawn || piece == (int)Piece.BlackPawn) {
+                //     if ((bitboard & _pawnFiles[index % 8]) > 1) {
+                //         Console.WriteLine("DOUBLED");
+                //     }
+                // }
 
                 if (piece == (int)Piece.WhiteQueen || piece == (int)Piece.BlackQueen) {
                     int mobility = BitboardHelper.CountBits(Movegen.GetQueenAttacks((Square)index, _board.Blockers[2]));
