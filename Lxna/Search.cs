@@ -188,13 +188,12 @@ public class Search {
         _board = board;
         _time = time;
         _timeControl = timeControl;
+        _nodes = 0;
 
         int currentDepth, bestMove = _board.GetPseudoLegalMoves()[0];
         int alpha = -100000, beta = 100000;
         
         for (currentDepth = 1; currentDepth <= depth; currentDepth++) {
-            _nodes = 0;
-            
             int iterationScore = Negamax(alpha, beta, currentDepth, 0, true);
 
             if ((_timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
@@ -210,11 +209,14 @@ public class Search {
             
             alpha = iterationScore - 100;
             beta = iterationScore + 100;
-
-
+            
             if (shouldPrint) {
-                Console.Write("depth {0,2} score {1,4}, nodes {2,9:n0} time {3,4:n0}ms pv ", currentDepth,
-                    iterationScore, _nodes, _timer.GetDiff());
+                long timeTaken = _timer.GetDiff();
+                double timeSeconds = timeTaken / 1000.0;
+                double nps = _nodes / timeSeconds;
+                
+                Console.Write("info depth {0} seldepth {0} score cp {1}, nps {2} time {3} pv ", currentDepth,
+                    iterationScore, (uint)nps, timeTaken);
 
                 for (int i = 0; i < PvLength[0]; i++) {
                     Move.Print(PvTable[0, i]);
@@ -393,15 +395,15 @@ public class Search {
                 phase += GamePhases[pIndex];
 
                 switch (piece) {
-                    case (int)Piece.WhitePawn:
-                    case (int)Piece.BlackPawn: {
-                        if (BitboardHelper.CountBits(bitboard & _pawnFiles[square]) > 1) {
-                            middleGame -= 20 * side;
-                            endGame -= 20 * side;
-                        }
-
-                        break;
-                    }
+                    // case (int)Piece.WhitePawn:
+                    // case (int)Piece.BlackPawn: {
+                    //     if (BitboardHelper.CountBits(bitboard & _pawnFiles[square]) > 1) {
+                    //         middleGame -= 20 * side;
+                    //         endGame -= 20 * side;
+                    //     }
+                    //
+                    //     break;
+                    // }
 
                     case (int)Piece.WhiteBishop:
                     case (int)Piece.BlackBishop: {
