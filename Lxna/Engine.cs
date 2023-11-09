@@ -97,11 +97,14 @@
     
     public class Engine {
         public static readonly String StartPos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ";
+        // public static readonly String TestPos = "8/pp6/pp6/8/8/P7/PPP5/8 w - -";
         public static Board Board = new(StartPos);
 
         public static void Main(string[] args) {
             Movegen.Init();
             Search.Init();
+            // Board.Print();
+            // Console.WriteLine(Search.Evaluate());
             UniversalChessInterface.StartLoop(args.Contains("--fastinit"));
         }
     }

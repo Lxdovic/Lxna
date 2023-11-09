@@ -10,8 +10,7 @@ public class Search {
     private static int[,] _whiteEndGamePieceSquareTables = new int[6, 64];
     private static int[,] _blackMiddleGamePieceSquareTables = new int[6, 64];
     private static int[,] _blackEndGamePieceSquareTables = new int[6, 64];
-    // private static ulong[] _pawnFiles = new ulong[8];
-    // private static ulong[] _pawnRanks = new ulong[8];
+    private static ulong[] _pawnFiles = new ulong[64];
     private static readonly int[,] MiddleGamePieceSquareTables = {
         {
             0,   0,   0,   0,   0,   0,  0,   0,
@@ -151,18 +150,15 @@ public class Search {
     private static int _time;
 
     public static void Init() {
-        // for (int i = 0; i < 8; i++) {
-        //     ulong fileBitboard = 0x0;
-        //     ulong rankBitboard = 0x0;
-        //
-        //     for (int j = 0; j < 8; j++) {
-        //         BitboardHelper.SetBitAtIndex(i * 8 + j, ref rankBitboard);
-        //         BitboardHelper.SetBitAtIndex(j * 8 + i, ref fileBitboard);
-        //     }
-        //
-        //     BitboardHelper.Print(fileBitboard);
-        //     BitboardHelper.Print(rankBitboard);
-        // }
+        for (int i = 0; i < 64; i++) {
+            ulong fileBitboard = 0x0;
+        
+            for (int j = 0; j < 8; j++) {
+                BitboardHelper.SetBitAtIndex(j * 8 + i, ref fileBitboard);
+            }
+
+            _pawnFiles[i] = fileBitboard;
+        }
         
         for (int piece = (int)Piece.WhitePawn; piece <= (int)Piece.BlackKing; piece++) {
             bool isWhite = piece < 6;
@@ -381,7 +377,7 @@ public class Search {
 
     public static int Evaluate() {
         int phase = 0, middleGame = 0, endGame = 0;
-
+        
         for (int piece = 0; piece < 12; piece++) {
             ulong bitboard = _board.Bitboards[piece];
             bool isWhite = piece < 6;
@@ -395,29 +391,44 @@ public class Search {
                 middleGame += isWhite ? _whiteMiddleGamePieceSquareTables[pIndex, square] : _blackMiddleGamePieceSquareTables[pIndex, square];
                 endGame += isWhite ? _whiteEndGamePieceSquareTables[pIndex, square] : _blackEndGamePieceSquareTables[pIndex, square];
                 phase += GamePhases[pIndex];
-                
-                // if (piece == (int)Piece.WhitePawn || piece == (int)Piece.BlackPawn) {
-                //     if ((bitboard & _pawnFiles[index % 8]) > 1) {
-                //         Console.WriteLine("DOUBLED");
-                //     }
-                // }
 
-                if (piece == (int)Piece.WhiteQueen || piece == (int)Piece.BlackQueen) {
-                    int mobility = BitboardHelper.CountBits(Movegen.GetQueenAttacks((Square)index, _board.Blockers[2]));
-                    middleGame += mobility * side;
-                    endGame += mobility * side;
-                }
+                switch (piece) {
+                    case (int)Piece.WhitePawn:
+                    case (int)Piece.BlackPawn: {
+                        if (BitboardHelper.CountBits(bitboard & _pawnFiles[square]) > 1) {
+                            middleGame -= 20 * side;
+                            endGame -= 20 * side;
+                        }
 
-                if (piece == (int)Piece.WhiteBishop || piece == (int)Piece.BlackBishop) {
-                    int mobility = BitboardHelper.CountBits(Movegen.GetBishopAttacks((Square)index, _board.Blockers[2]));
-                    middleGame += mobility * side;
-                    endGame += mobility * side;
-                }
+                        break;
+                    }
 
-                if (piece == (int)Piece.WhiteRook || piece == (int)Piece.BlackRook) {
-                    int mobility = BitboardHelper.CountBits(Movegen.GetRookAttacks((Square)index, _board.Blockers[2]));
-                    middleGame += mobility * side;
-                    endGame += mobility * side;
+                    case (int)Piece.WhiteBishop:
+                    case (int)Piece.BlackBishop: {
+                        int mobility = BitboardHelper.CountBits(Movegen.GetBishopAttacks((Square)index, _board.Blockers[2]));
+                        middleGame += mobility * side;
+                        endGame += mobility * side;
+
+                        break;
+                    }
+
+                    case (int)Piece.WhiteRook:
+                    case (int)Piece.BlackRook: {
+                        int mobility = BitboardHelper.CountBits(Movegen.GetRookAttacks((Square)index, _board.Blockers[2]));
+                        middleGame += mobility * side;
+                        endGame += mobility * side;
+
+                        break;
+                    }
+                    
+                    case (int)Piece.WhiteQueen:
+                    case (int)Piece.BlackQueen: {
+                        int mobility = BitboardHelper.CountBits(Movegen.GetQueenAttacks((Square)index, _board.Blockers[2]));
+                        middleGame += mobility * side;
+                        endGame += mobility * side;
+
+                        break;
+                    }
                 }
 
                 BitboardHelper.PopBitAtIndex(square, ref bitboard);
