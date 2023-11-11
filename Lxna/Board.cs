@@ -63,7 +63,7 @@ namespace Lxna
         private List<int> _castlingistory = new();
         private List<ulong[]> _bitboardsHistory = new();        
         private List<ulong[]> _blockersHistory = new();
-        // public List<ulong> _boardHistory = new();
+        public List<ulong> _boardHistory = new();
 
         public ulong GetZobrist() {
             ulong finalKey = 0x0UL;
@@ -250,6 +250,7 @@ namespace Lxna
             
             _bitboardsHistory.Add(bitboardsCopyArray);
             _blockersHistory.Add(blockersCopyArray);
+            _boardHistory.Add(GetZobrist());
         }
         
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -265,6 +266,7 @@ namespace Lxna
             _castlingistory.RemoveAt( _castlingistory.Count - 1);
             _bitboardsHistory.RemoveAt( _bitboardsHistory.Count - 1);
             _blockersHistory.RemoveAt( _blockersHistory.Count - 1);
+            _boardHistory.RemoveAt(_boardHistory.Count - 1);
             
             // if (_boardHistory.Count > 0) _boardHistory.RemoveAt(_boardHistory.Count - 1);
         }

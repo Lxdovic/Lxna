@@ -9,8 +9,7 @@ public class Search {
     private static int[,] _whiteMiddleGamePieceSquareTables = new int[6, 64];
     private static int[,] _whiteEndGamePieceSquareTables = new int[6, 64];
     private static int[,] _blackMiddleGamePieceSquareTables = new int[6, 64];
-    private static int[,] _blackEndGamePieceSquareTables = new int[6, 64];
-    private static ulong[] _pawnFiles = new ulong[64];
+    private static int[,] _blackEndGamePieceSquareTables = new int[6, 64]; 
     private static readonly int[,] MiddleGamePieceSquareTables = {
         {
             0,   0,   0,   0,   0,   0,  0,   0,
@@ -148,18 +147,7 @@ public class Search {
     private static bool _timeControl = true;
     private static bool _stopSearch;
     private static int _time;
-
     public static void Init() {
-        for (int i = 0; i < 64; i++) {
-            ulong fileBitboard = 0x0;
-        
-            for (int j = 0; j < 8; j++) {
-                BitboardHelper.SetBitAtIndex(j * 8 + i, ref fileBitboard);
-            }
-
-            _pawnFiles[i] = fileBitboard;
-        }
-        
         for (int piece = (int)Piece.WhitePawn; piece <= (int)Piece.BlackKing; piece++) {
             bool isWhite = piece < 6;
             
@@ -196,7 +184,7 @@ public class Search {
         for (currentDepth = 1; currentDepth <= depth; currentDepth++) {
             int iterationScore = Negamax(alpha, beta, currentDepth, 0, true);
 
-            if ((_timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
+            if ((_timeControl && _timer.GetDiff() > _time / 28) || _stopSearch) break;
             
             bestMove = PvTable[0,0];
             
@@ -207,8 +195,8 @@ public class Search {
                 continue;
             }
             
-            alpha = iterationScore - 100;
-            beta = iterationScore + 100;
+            alpha = iterationScore - 60;
+            beta = iterationScore + 60;
             
             if (shouldPrint) {
                 long timeTaken = _timer.GetDiff();
@@ -237,7 +225,7 @@ public class Search {
         Array.Clear(TranspositionTable, 0, TranspositionTable.Length);
         Array.Clear(PvTable, 0, PvTable.Length);
         Array.Clear(PvLength, 0, PvLength.Length);
-        
+
         return bestMove;
     }
 
@@ -246,14 +234,18 @@ public class Search {
         
         bool isRoot = ply == 0;
         
-        // if (!isRoot && _board._boardHistory.Contains(positionKey)) return 0;
+        ulong positionKey = _board.GetZobrist();
+        
+        if (!isRoot && _board._boardHistory.Contains(positionKey)) return 0;
         
         if (depth == 0) {
             _nodes++;
             return Quiescence(alpha, beta, 4);
         }
         
-        ulong positionKey = _board.GetZobrist();
+        bool isInCheck = _board.IsInCheck();
+
+        if (isInCheck) depth++;
         
         TranspositionTableEntry entry = TranspositionTable[positionKey % 0x7FFFFF];
         
@@ -261,8 +253,6 @@ public class Search {
             (entry.Flag == MoveFlag.Exact ||
              (entry.Flag == MoveFlag.Alpha && entry.Score <= alpha) ||
              (entry.Flag == MoveFlag.Beta && entry.Score >= beta))) return entry.Score;
-
-        bool isInCheck = _board.IsInCheck();
         
         if (!isInCheck && depth >= 3 && ply > 0 && nullCheck) {
             _board.MakeNullMove();
@@ -295,7 +285,7 @@ public class Search {
         }
 
         for (int i = 0; i < moveSpan.Length; i++) {
-            if ((_nodes % 2048 == 0 && _timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
+            if ((_nodes % 2048 == 0 && _timeControl && _timer.GetDiff() > _time / 28) || _stopSearch) break;
             
             for (int j = i + 1; j < moveSpan.Length; j++) {
                 if (moveScores[i] < moveScores[j])
@@ -306,18 +296,31 @@ public class Search {
             int move = moveSpan[i];
             
             if (!_board.MakeMove(move)) continue;
-            legalMoves++;
             int score;
-            
-            if (foundPv) {
-                score = -Negamax(-alpha - 1, -alpha, depth - 1, ply + 1, true);
-                
-                if (score > alpha && score < beta) score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
+
+            if (legalMoves == 0) score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
+            else {
+                if (legalMoves >= 4 && depth >= 3) score = -Negamax(-(alpha + 1), -alpha, depth - 2, ply + 1, true);
+                else score = alpha + 1;
+
+                if (score > alpha) {
+                    score = -Negamax(-(alpha + 1), -alpha, depth - 1, ply + 1, true);
+                    if (score > alpha && score < beta) {
+                        score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
+                    }
+                }
             }
-            
-            else score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
+            // if (foundPv) {
+            //     score = -Negamax(-alpha - 1, -alpha, depth - 1, ply + 1, true);
+            //     
+            //     if (score > alpha && score < beta) score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
+            // }
+            //
+            // else score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
             
             _board.TakeBack();
+            
+            legalMoves++;
             
             if (score > bestScore)
             {
@@ -327,13 +330,13 @@ public class Search {
                 if (bestScore > alpha) {
                     alpha = bestScore;
                     foundPv = true;
-
+            
                     PvTable[ply, ply] = move;
-
+            
                     for (int nextPly = ply + 1; nextPly < PvLength[ply + 1]; nextPly++) {
                         PvTable[ply, nextPly] = PvTable[ply + 1, nextPly];
                     }
-
+            
                     PvLength[ply] = PvLength[ply + 1];
                 }
                 
@@ -346,6 +349,7 @@ public class Search {
         }
 
         if (legalMoves == 0) return isInCheck ? -100000 + ply : 0;
+        // if (legalMoves == 1) depth++;
         
         MoveFlag flag = bestScore >= beta ? MoveFlag.Beta :
             bestScore > startAlpha ? MoveFlag.Exact : MoveFlag.Alpha;
@@ -353,6 +357,7 @@ public class Search {
         TranspositionTable[positionKey % TranspositionTableSize] =
             new TranspositionTableEntry(positionKey, bestScore, depth, flag, bestMove);
 
+        
         return bestScore;
     }
 
@@ -383,11 +388,11 @@ public class Search {
         for (int piece = 0; piece < 12; piece++) {
             ulong bitboard = _board.Bitboards[piece];
             bool isWhite = piece < 6;
-            int side = isWhite ? 1 : -1;
+            // int side = isWhite ? 1 : -1;
 
             while (bitboard > 0) {
                 int square = BitboardHelper.GetLSFBIndex(bitboard);
-                int index = isWhite ? square : square ^ 56;
+                // int index = isWhite ? square : square ^ 56;
                 int pIndex = piece % 6;
                 
                 middleGame += isWhite ? _whiteMiddleGamePieceSquareTables[pIndex, square] : _blackMiddleGamePieceSquareTables[pIndex, square];
@@ -395,40 +400,89 @@ public class Search {
                 phase += GamePhases[pIndex];
 
                 switch (piece) {
-                    // case (int)Piece.WhitePawn:
-                    // case (int)Piece.BlackPawn: {
-                    //     if (BitboardHelper.CountBits(bitboard & _pawnFiles[square]) > 1) {
-                    //         middleGame -= 20 * side;
-                    //         endGame -= 20 * side;
+                    // case (int)Piece.WhitePawn: {
+                    //     int doubledPawns = BitboardHelper.CountBits(_board.Bitboards[piece] & FileMasks[index]);
+                    //     if (doubledPawns > 1) {
+                    //         middleGame += DoubledPawnPenalty;
+                    //         endGame += DoubledPawnPenalty;
                     //     }
+                    //
+                    //     if ((_board.Bitboards[piece] & IsolatedPawnMasks[index]) == 0) {
+                    //         middleGame += IsolatedPawnPenalty;
+                    //         endGame += IsolatedPawnPenalty;
+                    //     }
+                    //     
+                    //     break;
+                    // }
+                    // case (int)Piece.BlackPawn: {
+                    //     int doubledPawns = BitboardHelper.CountBits(_board.Bitboards[piece] & FileMasks[index]);
+                    //     if (doubledPawns > 1) {
+                    //         middleGame -= DoubledPawnPenalty;
+                    //         endGame -= DoubledPawnPenalty;
+                    //     }
+                    //
+                    //     if ((_board.Bitboards[piece] & IsolatedPawnMasks[index]) == 0) {
+                    //         middleGame -= IsolatedPawnPenalty;
+                    //         endGame -= IsolatedPawnPenalty;
+                    //     }
+                    //
+                    //     // if (isWhite && (WhitePassedMasks[index] & _board.Bitboards[(int)Piece.BlackPawn]) == 0) {
+                    //     //     int bonus = PassedPawnBonus[GetRank[index]];
+                    //     //     middleGame += bonus;
+                    //     //     endGame += bonus;
+                    //     // }
+                    //     //
+                    //     // if (!isWhite && (BlackPassedMasks[index] & _board.Bitboards[(int)Piece.WhitePawn]) == 0) {
+                    //     //     int bonus = PassedPawnBonus[GetRank[64 - index]];
+                    //     //     middleGame += bonus;
+                    //     //     endGame += bonus;
+                    //     // }
                     //
                     //     break;
                     // }
 
-                    case (int)Piece.WhiteBishop:
-                    case (int)Piece.BlackBishop: {
-                        int mobility = BitboardHelper.CountBits(Movegen.GetBishopAttacks((Square)index, _board.Blockers[2]));
-                        middleGame += mobility * side;
-                        endGame += mobility * side;
-
-                        break;
-                    }
-
-                    case (int)Piece.WhiteRook:
-                    case (int)Piece.BlackRook: {
-                        int mobility = BitboardHelper.CountBits(Movegen.GetRookAttacks((Square)index, _board.Blockers[2]));
-                        middleGame += mobility * side;
-                        endGame += mobility * side;
-
-                        break;
-                    }
+                    case (int)Piece.WhiteBishop: {
+                        int mobility = BitboardHelper.CountBits(Movegen.GetBishopAttacks((Square)square, _board.Blockers[2]));
+                        middleGame += mobility;
+                        endGame += mobility;
                     
-                    case (int)Piece.WhiteQueen:
-                    case (int)Piece.BlackQueen: {
-                        int mobility = BitboardHelper.CountBits(Movegen.GetQueenAttacks((Square)index, _board.Blockers[2]));
-                        middleGame += mobility * side;
-                        endGame += mobility * side;
+                        break;
+                    }
+                    case (int)Piece.BlackBishop: {
+                        int mobility = BitboardHelper.CountBits(Movegen.GetBishopAttacks((Square)(square ^ 56), _board.Blockers[2]));
+                        middleGame -= mobility;
+                        endGame -= mobility;
+                    
+                        break;
+                    }
 
+                    case (int)Piece.WhiteRook: {
+                        int mobility = BitboardHelper.CountBits(Movegen.GetRookAttacks((Square)square, _board.Blockers[2]));
+                        middleGame += mobility;
+                        endGame += mobility;
+                    
+                        break;
+                    }
+                    case (int)Piece.BlackRook: {
+                        int mobility = BitboardHelper.CountBits(Movegen.GetRookAttacks((Square)(square ^ 56), _board.Blockers[2]));
+                        middleGame -= mobility;
+                        endGame -= mobility;
+                    
+                        break;
+                    }
+
+                    case (int)Piece.WhiteQueen: {
+                        int mobility = BitboardHelper.CountBits(Movegen.GetQueenAttacks((Square)square, _board.Blockers[2]));
+                        middleGame += mobility;
+                        endGame += mobility;
+                    
+                        break;
+                    }
+                    case (int)Piece.BlackQueen: {
+                        int mobility = BitboardHelper.CountBits(Movegen.GetQueenAttacks((Square)(square ^ 56), _board.Blockers[2]));
+                        middleGame -= mobility;
+                        endGame -= mobility;
+                    
                         break;
                     }
                 }
