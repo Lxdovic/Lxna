@@ -10,6 +10,26 @@ public class Search {
     private static int[,] _whiteEndGamePieceSquareTables = new int[6, 64];
     private static int[,] _blackMiddleGamePieceSquareTables = new int[6, 64];
     private static int[,] _blackEndGamePieceSquareTables = new int[6, 64]; 
+    private static readonly int[] GetRank = {
+        7, 7, 7, 7, 7, 7, 7, 7,
+        6, 6, 6, 6, 6, 6, 6, 6,
+        5, 5, 5, 5, 5, 5, 5, 5,
+        4, 4, 4, 4, 4, 4, 4, 4,
+        3, 3, 3, 3, 3, 3, 3, 3,
+        2, 2, 2, 2, 2, 2, 2, 2,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 0, 0
+    };
+    private static readonly int DoubledPawnPenalty = -10;
+    private static readonly int IsolatedPawnPenalty = -10;
+    private static readonly int[] PassedPawnBonus = { 0, 5, 10, 20, 35, 60, 100, 200 };
+    private static readonly int SemiOpenFileScore = 10;
+    private static readonly int OpenFileScore = 20;
+    private static ulong[] FileMasks = new ulong[64];
+    private static ulong[] RankMasks = new ulong[64];
+    private static ulong[] IsolatedPawnMasks = new ulong[64];
+    private static ulong[] WhitePassedMasks = new ulong[64];
+    private static ulong[] BlackPassedMasks = new ulong[64];
     private static readonly int[,] MiddleGamePieceSquareTables = {
         {
             0,   0,   0,   0,   0,   0,  0,   0,
@@ -147,7 +167,54 @@ public class Search {
     private static bool _timeControl = true;
     private static bool _stopSearch;
     private static int _time;
+    public static ulong SetFileRankMasks(int file, int rank) {
+        ulong mask = 0x0UL;
+
+        for (int currentRank = 0; currentRank < 8; currentRank++) {
+            for (int currentFile = 0; currentFile < 8; currentFile++) {
+                int square = currentRank * 8 + currentFile;
+
+                if (file >= 0 && file == currentFile) BitboardHelper.SetBitAtIndex(square, ref mask);
+
+                else if (rank >= 0 && rank == currentRank) {
+                    BitboardHelper.SetBitAtIndex(square, ref mask);
+                }
+            }
+        }
+
+        return mask;
+    }
     public static void Init() {
+        for (int currentRank = 0; currentRank < 8; currentRank++) {
+            for (int currentFile = 0; currentFile < 8; currentFile++) {
+                int square = currentRank * 8 + currentFile;
+
+                FileMasks[square] |= SetFileRankMasks(currentFile, -1);
+                RankMasks[square] |= SetFileRankMasks(-1, currentRank);
+                IsolatedPawnMasks[square] |= SetFileRankMasks(currentFile - 1, -1);
+                IsolatedPawnMasks[square] |= SetFileRankMasks(currentFile + 1, -1);
+            }
+        }
+
+        for (int currentRank = 0; currentRank < 8; currentRank++) {
+            for (int currentFile = 0; currentFile < 8; currentFile++) {
+                int square = currentRank * 8 + currentFile;
+
+                WhitePassedMasks[square] |= SetFileRankMasks(currentFile - 1, -1);
+                WhitePassedMasks[square] |= SetFileRankMasks(currentFile, -1);
+                WhitePassedMasks[square] |= SetFileRankMasks(currentFile + 1, -1);
+                BlackPassedMasks[square] |= SetFileRankMasks(currentFile - 1, -1);
+                BlackPassedMasks[square] |= SetFileRankMasks(currentFile, -1);
+                BlackPassedMasks[square] |= SetFileRankMasks(currentFile + 1, -1);
+
+                for (int i = 0; i < 8 - currentRank; i++) 
+                    WhitePassedMasks[square] &= ~RankMasks[(7 - i) * 8 + currentFile];
+
+                for (int i = 0; i < currentRank + 1; i++) 
+                    BlackPassedMasks[square] &= ~RankMasks[i * 8 + currentFile];
+            }
+        }
+        
         for (int piece = (int)Piece.WhitePawn; piece <= (int)Piece.BlackKing; piece++) {
             bool isWhite = piece < 6;
             
@@ -236,7 +303,7 @@ public class Search {
         
         ulong positionKey = _board.GetZobrist();
         
-        if (!isRoot && _board._boardHistory.Contains(positionKey)) return 0;
+        // if (!isRoot && _board._boardHistory.Contains(positionKey)) return 0;
         
         if (depth == 0) {
             _nodes++;
@@ -356,7 +423,6 @@ public class Search {
         
         TranspositionTable[positionKey % TranspositionTableSize] =
             new TranspositionTableEntry(positionKey, bestScore, depth, flag, bestMove);
-
         
         return bestScore;
     }
@@ -392,7 +458,7 @@ public class Search {
 
             while (bitboard > 0) {
                 int square = BitboardHelper.GetLSFBIndex(bitboard);
-                // int index = isWhite ? square : square ^ 56;
+                int index = isWhite ? square : square ^ 56;
                 int pIndex = piece % 6;
                 
                 middleGame += isWhite ? _whiteMiddleGamePieceSquareTables[pIndex, square] : _blackMiddleGamePieceSquareTables[pIndex, square];
@@ -400,46 +466,46 @@ public class Search {
                 phase += GamePhases[pIndex];
 
                 switch (piece) {
-                    // case (int)Piece.WhitePawn: {
-                    //     int doubledPawns = BitboardHelper.CountBits(_board.Bitboards[piece] & FileMasks[index]);
-                    //     if (doubledPawns > 1) {
-                    //         middleGame += DoubledPawnPenalty;
-                    //         endGame += DoubledPawnPenalty;
-                    //     }
-                    //
-                    //     if ((_board.Bitboards[piece] & IsolatedPawnMasks[index]) == 0) {
-                    //         middleGame += IsolatedPawnPenalty;
-                    //         endGame += IsolatedPawnPenalty;
-                    //     }
-                    //     
-                    //     break;
-                    // }
-                    // case (int)Piece.BlackPawn: {
-                    //     int doubledPawns = BitboardHelper.CountBits(_board.Bitboards[piece] & FileMasks[index]);
-                    //     if (doubledPawns > 1) {
-                    //         middleGame -= DoubledPawnPenalty;
-                    //         endGame -= DoubledPawnPenalty;
-                    //     }
-                    //
-                    //     if ((_board.Bitboards[piece] & IsolatedPawnMasks[index]) == 0) {
-                    //         middleGame -= IsolatedPawnPenalty;
-                    //         endGame -= IsolatedPawnPenalty;
-                    //     }
-                    //
-                    //     // if (isWhite && (WhitePassedMasks[index] & _board.Bitboards[(int)Piece.BlackPawn]) == 0) {
-                    //     //     int bonus = PassedPawnBonus[GetRank[index]];
-                    //     //     middleGame += bonus;
-                    //     //     endGame += bonus;
-                    //     // }
-                    //     //
-                    //     // if (!isWhite && (BlackPassedMasks[index] & _board.Bitboards[(int)Piece.WhitePawn]) == 0) {
-                    //     //     int bonus = PassedPawnBonus[GetRank[64 - index]];
-                    //     //     middleGame += bonus;
-                    //     //     endGame += bonus;
-                    //     // }
-                    //
-                    //     break;
-                    // }
+                    case (int)Piece.WhitePawn: {
+                        int doubledPawns = BitboardHelper.CountBits(_board.Bitboards[piece] & FileMasks[index]);
+                        if (doubledPawns > 1) {
+                            middleGame += DoubledPawnPenalty;
+                            endGame += DoubledPawnPenalty;
+                        }
+                    
+                        if ((_board.Bitboards[piece] & IsolatedPawnMasks[index]) == 0) {
+                            middleGame += IsolatedPawnPenalty;
+                            endGame += IsolatedPawnPenalty;
+                        }
+                    
+                        if ((WhitePassedMasks[index] & _board.Bitboards[(int)Piece.BlackPawn]) == 0) {
+                            int bonus = PassedPawnBonus[GetRank[index]];
+                            middleGame += bonus;
+                            endGame += bonus;
+                        }
+                        
+                        break;
+                    }
+                    case (int)Piece.BlackPawn: {
+                        int doubledPawns = BitboardHelper.CountBits(_board.Bitboards[piece] & FileMasks[index]);
+                        if (doubledPawns > 1) {
+                            middleGame -= DoubledPawnPenalty;
+                            endGame -= DoubledPawnPenalty;
+                        }
+                    
+                        if ((_board.Bitboards[piece] & IsolatedPawnMasks[index]) == 0) {
+                            middleGame -= IsolatedPawnPenalty;
+                            endGame -= IsolatedPawnPenalty;
+                        }
+                        
+                        if ((BlackPassedMasks[index] & _board.Bitboards[(int)Piece.WhitePawn]) == 0) {
+                            int bonus = PassedPawnBonus[GetRank[index]];
+                            middleGame += bonus;
+                            endGame += bonus;
+                        }
+                    
+                        break;
+                    }
 
                     case (int)Piece.WhiteBishop: {
                         int mobility = BitboardHelper.CountBits(Movegen.GetBishopAttacks((Square)square, _board.Blockers[2]));
