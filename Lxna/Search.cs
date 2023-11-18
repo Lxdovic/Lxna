@@ -470,6 +470,12 @@ public class Search {
                 middleGame += isWhite ? _whiteMiddleGamePieceSquareTables[pIndex, square] : _blackMiddleGamePieceSquareTables[pIndex, square];
                 endGame += isWhite ? _whiteEndGamePieceSquareTables[pIndex, square] : _blackEndGamePieceSquareTables[pIndex, square];
                 phase += GamePhases[pIndex];
+                
+                // if (piece == (int)Piece.WhitePawn || piece == (int)Piece.BlackPawn) {
+                //     if ((bitboard & _pawnFiles[index % 8]) > 1) {
+                //         Console.WriteLine("DOUBLED");
+                //     }
+                // }
 
                 switch (piece) {
                     case (int)Piece.WhitePawn: {
