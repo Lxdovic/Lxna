@@ -2,7 +2,7 @@ namespace Lxna;
 
 public class Perft {
     private static ulong _nodes;
-    private static Board _board;
+    private static Board _board = new(Engine.StartPos);
     
     public static ulong PerfTest(Board board, int depth) {
         _board = board;

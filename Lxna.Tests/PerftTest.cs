@@ -23,14 +23,14 @@ public class PerftTest
         
         Assert.Equal((ulong)4865609, totalNodes);
     }
-
+    
     [Fact]
     // https://www.chessprogramming.org/Perft_Results#Position_2
     public void KiwipetePosition() {
         Movegen.Init();
         Board board = new Board(_kiwipete);
         board.Print();
-
+    
         ulong totalNodes = Perft.PerfTest(board, 4);
         
         Assert.Equal((ulong)4085603, totalNodes);
@@ -42,7 +42,7 @@ public class PerftTest
         Movegen.Init();
         Board board = new Board(_pos3);
         board.Print();
-
+    
         ulong totalNodes = Perft.PerfTest(board, 6);
         
         Assert.Equal((ulong)11030083, totalNodes);
@@ -54,7 +54,7 @@ public class PerftTest
         Movegen.Init();
         Board board = new Board(_pos4);
         board.Print();
-
+    
         ulong totalNodes = Perft.PerfTest(board, 4);
         
         Assert.Equal((ulong)422333, totalNodes);
@@ -66,7 +66,7 @@ public class PerftTest
         Movegen.Init();
         Board board = new Board(_pos5);
         board.Print();
-
+    
         ulong totalNodes = Perft.PerfTest(board, 4);
         
         Assert.Equal((ulong)2103487, totalNodes);
