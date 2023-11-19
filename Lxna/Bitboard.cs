@@ -35,14 +35,11 @@ namespace Lxna {
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int CountBits(ulong value) {
-            // return System.Runtime.Intrinsics.X86.Popcnt.PopCount(Value);
             return System.Numerics.BitOperations.PopCount(value);
-            
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetLSFBIndex(ulong value) {
-            // return System.Runtime.Intrinsics.X86.Bmi1.X64.TrailingZeroCount(Value);
             return System.Numerics.BitOperations.TrailingZeroCount(value);
         }
 

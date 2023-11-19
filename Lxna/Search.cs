@@ -312,6 +312,7 @@ public class Search {
         }
         
         bool isInCheck = _board.IsInCheck();
+        bool isPv = beta - alpha != 1;
 
         if (isInCheck) depth++;
         
@@ -322,21 +323,27 @@ public class Search {
              (entry.Flag == MoveFlag.Alpha && entry.Score <= alpha) ||
              (entry.Flag == MoveFlag.Beta && entry.Score >= beta))) return entry.Score;
         
-        if (!isInCheck && depth >= 3 && ply > 0 && nullCheck) {
-            _board.MakeNullMove();
-            int value = -Negamax(-beta, -beta + 1, depth - 3, ply, false);
-            _board.TakeBack();
-        
-            if (value >= beta)
-                return beta;
+        if (!isPv && !isInCheck) {
+            int staticEval = Evaluate();
+            
+            if (depth <= 7 && staticEval - 74 * depth >= beta)
+                return staticEval;
+            
+            if (depth >= 3 && ply > 0 && nullCheck) {
+                _board.MakeNullMove();
+                int value = -Negamax(-beta, -beta + 1, depth - 3, ply, false);
+                _board.TakeBack();
+
+                if (value >= beta)
+                    return beta;
+            }
         }
         
         Span<int> moveSpan = stackalloc int[218];
         _board.GetPseudoLegalMovesNonAlloc(ref moveSpan);
-        bool foundPv = false;
         int bestMove = 0;
         int bestScore = -100000;
-        int startAlpha = alpha;
+        int startAlpha = alpha; 
         int legalMoves = 0;
         int[] moveScores = new int[moveSpan.Length];
         
@@ -371,7 +378,7 @@ public class Search {
 
             if (legalMoves == 0) score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
             else {
-                if (legalMoves >= 4 && depth >= 3) score = -Negamax(-(alpha + 1), -alpha, depth - 2, ply + 1, true);
+                if (legalMoves >= 4 && depth >= 3 && !isInCheck) score = -Negamax(-(alpha + 1), -alpha, depth - 2, ply + 1, true);
                 else score = alpha + 1;
 
                 if (score > alpha) {
@@ -381,13 +388,6 @@ public class Search {
                     }
                 }
             }
-            // if (foundPv) {
-            //     score = -Negamax(-alpha - 1, -alpha, depth - 1, ply + 1, true);
-            //     
-            //     if (score > alpha && score < beta) score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
-            // }
-            //
-            // else score = -Negamax(-beta, -alpha, depth - 1, ply + 1, true);
             
             _board.TakeBack();
             
@@ -395,14 +395,12 @@ public class Search {
             
             legalMoves++;
             
-            if (score > bestScore)
-            {
+            if (score > bestScore) {
                 bestScore = score;
                 bestMove = move;
                 
                 if (bestScore > alpha) {
                     alpha = bestScore;
-                    foundPv = true;
             
                     PvTable[ply, ply] = move;
             
@@ -470,12 +468,6 @@ public class Search {
                 middleGame += isWhite ? _whiteMiddleGamePieceSquareTables[pIndex, square] : _blackMiddleGamePieceSquareTables[pIndex, square];
                 endGame += isWhite ? _whiteEndGamePieceSquareTables[pIndex, square] : _blackEndGamePieceSquareTables[pIndex, square];
                 phase += GamePhases[pIndex];
-                
-                // if (piece == (int)Piece.WhitePawn || piece == (int)Piece.BlackPawn) {
-                //     if ((bitboard & _pawnFiles[index % 8]) > 1) {
-                //         Console.WriteLine("DOUBLED");
-                //     }
-                // }
 
                 switch (piece) {
                     case (int)Piece.WhitePawn: {
