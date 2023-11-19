@@ -187,6 +187,38 @@ perft depth 5 nodes 4,865,609 time  386
 
 `stop`
 
+### Make a move
+
+`move <move>`
+
+example input
+
+```
+move e2e4
+```
+
+example output
+
+```
+ 8  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜ 
+ 7  ♟  ♟  ♟  ♟  ♟  ♟  ♟  ♟ 
+ 6                         
+ 5                         
+ 4              ♟          
+ 3                         
+ 2  ♟  ♟  ♟  ♟     ♟  ♟  ♟ 
+ 1  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜ 
+    a  b  c  d  e  f  g  h
+
+SideToMove:           Black
+EnPassant:               E3
+Castling:              KQkq
+```
+
+### Get current fen (dev)
+
+`fen`
+
 ### Exit program
 
 `quit`
