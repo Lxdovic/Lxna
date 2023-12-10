@@ -85,7 +85,8 @@ namespace Lxna {
                 KingAttacks[square] = MaskKingAttacks((Square)square);
             }
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong GetBishopAttacks(Square square, ulong blockers) {
             blockers &= BishopMask[(int)square];
             blockers *= Magics.BishopMagicNumbers[(int)square];
@@ -108,7 +109,6 @@ namespace Lxna {
             return GetRookAttacks(square, blockers) | GetBishopAttacks(square, blockers);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong MaskKingAttacks(Square square) {
             ulong attacks = 0x0;
             ulong bitboard = 0x0;

@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Lxna; 
 
 public class Search {
@@ -23,8 +25,8 @@ public class Search {
     private static readonly int DoubledPawnPenalty = -10;
     private static readonly int IsolatedPawnPenalty = -10;
     private static readonly int[] PassedPawnBonus = { 0, 5, 10, 20, 35, 60, 100, 200 };
-    private static readonly int _semiOpenFileScore = 10;
-    private static readonly int _openFileScore = 20;
+    private static readonly int SemiOpenFileScore = 10;
+    private static readonly int OpenFileScore = 20;
     private static ulong[] _fileMasks = new ulong[64];
     private static ulong[] _rankMasks = new ulong[64];
     private static ulong[] _isolatedPawnMasks = new ulong[64];
@@ -160,7 +162,7 @@ public class Search {
     public static int[,] PvTable = new int[64, 64];
     private static int[,,] _historyMoves = new int[2, 7, 64];
     private static int[] _killerMoves = new int[100];
-    private static List<ulong> _boardHistory = new List<ulong>();
+    private static List<ulong> _boardHistory = new ();
 
     public enum MoveFlag { Alpha, Exact, Beta }
     public record struct TranspositionTableEntry(ulong Key, int Score, int Depth, MoveFlag Flag, int Move);
@@ -238,6 +240,7 @@ public class Search {
         }
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public static int Think(Board board, bool timeControl, int time = 1000, int depth = 100, bool shouldPrint = true) {
         _timer = new Timer();
         _stopSearch = false;
@@ -252,7 +255,7 @@ public class Search {
         for (currentDepth = 1; currentDepth <= depth; currentDepth++) {
             int iterationScore = Negamax(alpha, beta, currentDepth, 0, true);
 
-            if ((_timeControl && _timer.GetDiff() > _time / 28) || _stopSearch) break;
+            if ((_timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
             
             bestMove = PvTable[0,0];
             
@@ -271,8 +274,8 @@ public class Search {
                 double timeSeconds = timeTaken / 1000.0;
                 double nps = _nodes / timeSeconds;
                 
-                Console.Write("info depth {0} seldepth {0} score cp {1}, nps {2} time {3} pv ", currentDepth,
-                    iterationScore, (uint)nps, timeTaken);
+                Console.Write("info depth {0} seldepth {0} score cp {1} nps {2} nodes {3} time {4} pv ", currentDepth,
+                    iterationScore, (uint)nps, _nodes, timeTaken);
 
                 for (int i = 0; i < PvLength[0]; i++) {
                     Move.Print(PvTable[0, i]);
@@ -297,6 +300,7 @@ public class Search {
         return bestMove;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Negamax(int alpha, int beta, int depth, int ply, bool nullCheck) {
         PvLength[ply] = ply;
         
@@ -308,15 +312,16 @@ public class Search {
         
         if (depth == 0) {
             _nodes++;
-            return Quiescence(alpha, beta, 4);
+            return Quiescence(alpha, beta, 3);
         }
         
         bool isInCheck = _board.IsInCheck();
         bool isPv = beta - alpha != 1;
+        bool canFPrune = false;
 
         if (isInCheck) depth++;
         
-        TranspositionTableEntry entry = TranspositionTable[positionKey % 0x7FFFFF];
+        TranspositionTableEntry entry = TranspositionTable[positionKey % TranspositionTableSize];
         
         if (entry.Key == positionKey && !isRoot && entry.Depth >= depth && 
             (entry.Flag == MoveFlag.Exact ||
@@ -337,6 +342,8 @@ public class Search {
                 if (value >= beta)
                     return beta;
             }
+            
+            canFPrune = depth <= 7 && staticEval + depth * 141 <= alpha;
         }
         
         Span<int> moveSpan = stackalloc int[218];
@@ -360,7 +367,7 @@ public class Search {
         }
 
         for (int i = 0; i < moveSpan.Length; i++) {
-            if ((_nodes % 2048 == 0 && _timeControl && _timer.GetDiff() > _time / 28) || _stopSearch) break;
+            if ((_nodes % 2048 == 0 && _timeControl && _timer.GetDiff() > _time / 30) || _stopSearch) break;
             
             for (int j = i + 1; j < moveSpan.Length; j++) {
                 if (moveScores[i] < moveScores[j])
@@ -369,6 +376,9 @@ public class Search {
             }
 
             int move = moveSpan[i];
+            
+            if (canFPrune && !(legalMoves == 0 || Move.GetMoveCapture(move) > 0 || Move.GetMovePromotion(move) > 0))
+                continue;
             
             if (!_board.MakeMove(move)) continue;
             
@@ -420,7 +430,6 @@ public class Search {
         }
 
         if (legalMoves == 0) return isInCheck ? -100000 + ply : 0;
-        // if (legalMoves == 1) depth++;
         
         MoveFlag flag = bestScore >= beta ? MoveFlag.Beta :
             bestScore > startAlpha ? MoveFlag.Exact : MoveFlag.Alpha;
@@ -431,6 +440,7 @@ public class Search {
         return bestScore;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Quiescence(int alpha, int beta, int limit) {
         _nodes++;
         int standPat = Evaluate();
@@ -452,6 +462,7 @@ public class Search {
         return alpha;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Evaluate() {
         int phase = 0, middleGame = 0, endGame = 0;
         
@@ -535,13 +546,13 @@ public class Search {
 
                         if ((_fileMasks[index] & _board.Bitboards[(int)Piece.WhitePawn]) == 0) {
                             if ((_fileMasks[index] & _board.Bitboards[(int)Piece.BlackPawn]) == 0) {
-                                middleGame += _openFileScore;
-                                endGame += _openFileScore;
+                                middleGame += OpenFileScore;
+                                endGame += OpenFileScore;
                             }
                         
                             else {
-                                middleGame += _semiOpenFileScore;
-                                endGame += _semiOpenFileScore;
+                                middleGame += SemiOpenFileScore;
+                                endGame += SemiOpenFileScore;
                             }
                         
                         }
@@ -555,13 +566,13 @@ public class Search {
                         
                         if ((_fileMasks[index] & _board.Bitboards[(int)Piece.BlackPawn]) == 0) {
                             if ((_fileMasks[index] & _board.Bitboards[(int)Piece.WhitePawn]) == 0) {
-                                middleGame -= _openFileScore;
-                                endGame -= _openFileScore;
+                                middleGame -= OpenFileScore;
+                                endGame -= OpenFileScore;
                             }
                         
                             else {
-                                middleGame -= _semiOpenFileScore;
-                                endGame -= _semiOpenFileScore;
+                                middleGame -= SemiOpenFileScore;
+                                endGame -= SemiOpenFileScore;
                             }
                         
                         }

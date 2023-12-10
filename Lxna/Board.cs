@@ -65,6 +65,7 @@ namespace Lxna
         private List<ulong[]> _blockersHistory = new();
         // public List<ulong> _boardHistory = new();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ulong GetZobrist() {
             ulong finalKey = 0x0UL;
             ulong bitboard;
@@ -108,7 +109,8 @@ namespace Lxna
             
             SideToMoveKey = Magics.GetRandomNumberU64();
         }
-        // private BoardCopy _boardCopy;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsInCheck() {
             if (IsSquareAttacked(
                 (Square)BitboardHelper.GetLSFBIndex(Bitboards[SideToMove == SideToMove.White ? (int)Piece.WhiteKing : (int)Piece.BlackKing]), 
@@ -120,7 +122,6 @@ namespace Lxna
         }
 
         public Board(String fen) {
-            // this originally was in ParseFen() but it got moved here to fix warnings
             Bitboards = new ulong[] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
             Blockers = new ulong[] { 0x0, 0x0, 0x0 };
             SideToMove = SideToMove.White;
@@ -250,7 +251,6 @@ namespace Lxna
             
             _bitboardsHistory.Add(bitboardsCopyArray);
             _blockersHistory.Add(blockersCopyArray);
-            // _boardHistory.Add(GetZobrist());
         }
         
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -266,9 +266,6 @@ namespace Lxna
             _castlingistory.RemoveAt( _castlingistory.Count - 1);
             _bitboardsHistory.RemoveAt( _bitboardsHistory.Count - 1);
             _blockersHistory.RemoveAt( _blockersHistory.Count - 1);
-            // _boardHistory.RemoveAt(_boardHistory.Count - 1);
-            
-            // if (_boardHistory.Count > 0) _boardHistory.RemoveAt(_boardHistory.Count - 1);
         }
 
         public void PrintAttacks(SideToMove side) {
