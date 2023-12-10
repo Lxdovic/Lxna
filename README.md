@@ -6,7 +6,7 @@ Bitboard chess engine written from scratch in C#
 
 - [@Lxdovic](https://www.github.com/Lxdovic)
 
-## Features (V0.2.0)
+## Features (V0.3.1)
 
 - [PeStO's Evaluation Function](https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function)
 - [Negamax](https://www.chessprogramming.org/Negamax)
@@ -200,14 +200,14 @@ move e2e4
 example output
 
 ```
- 8  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜ 
- 7  ♟  ♟  ♟  ♟  ♟  ♟  ♟  ♟ 
- 6                         
- 5                         
- 4              ♟          
- 3                         
- 2  ♟  ♟  ♟  ♟     ♟  ♟  ♟ 
- 1  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜ 
+ 8  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜
+ 7  ♟  ♟  ♟  ♟  ♟  ♟  ♟  ♟
+ 6
+ 5
+ 4              ♟
+ 3
+ 2  ♟  ♟  ♟  ♟     ♟  ♟  ♟
+ 1  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜
     a  b  c  d  e  f  g  h
 
 SideToMove:           Black
