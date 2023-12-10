@@ -6,7 +6,7 @@ namespace Lxna {
         public static void StartLoop(bool fastInit) {
             // let JIT run for a bit
             // https://stackoverflow.com/a/28950600
-            if (!fastInit) Search.Think(Engine.Board, false, 0, 8, false);
+            // if (!fastInit) Search.Think(Engine.Board, false, 0, 8, false);
             
             Console.WriteLine("_________________________________________________________________\n");
             Console.WriteLine("       Lxna engine by Lxdovic (https://github.com/Lxdovic)       ");
@@ -75,6 +75,8 @@ namespace Lxna {
             Console.WriteLine("                          search x plies");
             Console.WriteLine("    * wtime <x>");
             Console.WriteLine("                          search as white with x milliseconds left on the timer");
+            Console.WriteLine("    * movetime <x>");
+            Console.WriteLine("                          search as current player with x milliseconds left on the timer");
             Console.WriteLine("    * btime <x>");
             Console.WriteLine("                          search as black with x milliseconds left on the timer");
             Console.WriteLine("    * infinite");
@@ -102,7 +104,7 @@ namespace Lxna {
             int move = ParseMove(Engine.Board, instructions[0]);
             
             if (!Engine.Board.MakeMove(move)) Console.WriteLine("illegal move.");
-            else Engine.Board.Print();
+            // else Engine.Board.Print();
         }
 
         public static void PrintUci() {
@@ -126,6 +128,12 @@ namespace Lxna {
 
                 case "btime": case "wtime": {
                     _searchThread = new Thread(() => Search.Think(Engine.Board, true,int.Parse(instructions[1])));
+                    _searchThread.Start();
+                    break;
+                }
+                
+                case "movetime": {
+                    _searchThread = new Thread(() => Search.Think(Engine.Board, true, int.Parse(instructions[1])));
                     _searchThread.Start();
                     break;
                 }
@@ -162,7 +170,7 @@ namespace Lxna {
                 String[] moves = movesString[1].Split(" ");
 
                 foreach (var moveString in moves) {
-                    Console.WriteLine(moveString);
+                    // Console.WriteLine(moveString);
 
                     int move = ParseMove(Engine.Board, moveString);
 
@@ -172,7 +180,7 @@ namespace Lxna {
                 }
             }
 
-            Engine.Board.Print();
+            // Engine.Board.Print();
         }
 
         public static int ParseMove(Board board, int source, int target) {
