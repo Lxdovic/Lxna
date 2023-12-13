@@ -6,6 +6,10 @@ Bitboard chess engine written from scratch in C#
 
 - [@Lxdovic](https://www.github.com/Lxdovic)
 
+## Play on Lichess
+
+v0.3.0 is playable on [lichess](https://lichess.org/@/LxnaEngine)
+
 ## Features (V0.3.1)
 
 - [PeStO's Evaluation Function](https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function)
