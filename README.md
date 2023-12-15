@@ -24,6 +24,16 @@ v0.3.0 is playable on [lichess](https://lichess.org/@/LxnaEngine)
 - [Killer Heuristic](https://www.chessprogramming.org/Killer_Heuristic)
 - [History Heuristic](https://www.chessprogramming.org/History_Heuristic)
 
+## Strength (CCRL)
+
+| Version | BLITZ 2+1 | 40/2 FRC | 40/15 |
+|---------|---|---|---|
+| 0.1.0 | ? | ? | ? |
+| 0.2.0 | ? | ? | ? |
+| 0.3.0 | 1984 | ? | ? |
+
+[Lxna's CCRL Matches](https://www.computerchess.org.uk/ccrl/404/cgi/engine_details.cgi?print=Details&each_game=1&eng=Lxna%200.3.0%2064-bit#Lxna_0_3_0_64-bit)
+
 ## Documentation (UCI Protocol)
 
 ### Fast start
